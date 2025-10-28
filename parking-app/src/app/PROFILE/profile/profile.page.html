@@ -1,0 +1,112 @@
+<!-- ==================== PROFILE PAGE ==================== -->
+
+<!-- profile/profile.page.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="currentUser">
+    <!-- Profile Header -->
+    <div class="profile-header text-center mb-lg">
+      <ion-avatar class="mx-auto mb-md" style="width: 100px; height: 100px;">
+        <img [src]="currentUser?.profile_picture || 'assets/default-avatar.png'">
+      </ion-avatar>
+      <h1>{{ currentUser?.get_full_name }}</h1>
+      <p class="text-muted">{{ currentUser?.user_type | titlecase }}</p>
+      <ion-button fill="clear" (click)="editProfile()">
+        <ion-icon name="pencil" slot="start"></ion-icon>
+        Edit Profile
+      </ion-button>
+    </div>
+
+    <!-- Ratings Section -->
+    <ion-card *ngIf="currentUser?.user_type === 'driver' || currentUser?.user_type === 'both'">
+      <ion-card-header>
+        <ion-card-title>Driver Rating</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="text-center mb-md">
+          <h2 class="text-warning">{{ currentUser?.driver_rating }}</h2>
+          <div class="stars mb-md">
+            <ion-icon name="star" *ngFor="let i of [1,2,3,4,5]" [color]="i <= currentUser?.driver_rating ? 'warning' : 'light'"></ion-icon>
+          </div>
+          <p class="text-small text-muted">{{ currentUser?.driver_total_reviews }} reviews</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="currentUser?.user_type === 'owner' || currentUser?.user_type === 'both'" class="mt-md">
+      <ion-card-header>
+        <ion-card-title>Owner Rating</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="text-center mb-md">
+          <h2 class="text-warning">{{ currentUser?.owner_rating }}</h2>
+          <div class="stars mb-md">
+            <ion-icon name="star" *ngFor="let i of [1,2,3,4,5]" [color]="i <= currentUser?.owner_rating ? 'warning' : 'light'"></ion-icon>
+          </div>
+          <p class="text-small text-muted">{{ currentUser?.owner_total_reviews }} reviews</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Menu Items -->
+    <div class="menu-items mt-lg">
+      <ion-button expand="block" fill="clear" (click)="goToVehicles()" class="menu-button">
+        <ion-icon name="car" slot="start" size="large"></ion-icon>
+        <div class="text-left">
+          <p>My Vehicles</p>
+          <p class="text-small text-muted">Manage registered vehicles</p>
+        </div>
+        <ion-icon name="chevron-forward" slot="end"></ion-icon>
+      </ion-button>
+
+      <ion-button expand="block" fill="clear" (click)="goToBookings()" class="menu-button">
+        <ion-icon name="calendar" slot="start" size="large"></ion-icon>
+        <div class="text-left">
+          <p>My Bookings</p>
+          <p class="text-small text-muted">View booking history</p>
+        </div>
+        <ion-icon name="chevron-forward" slot="end"></ion-icon>
+      </ion-button>
+
+      <ion-button *ngIf="currentUser?.user_type === 'owner' || currentUser?.user_type === 'both'" expand="block" fill="clear" (click)="goToOwnerDashboard()" class="menu-button">
+        <ion-icon name="business" slot="start" size="large"></ion-icon>
+        <div class="text-left">
+          <p>Owner Dashboard</p>
+          <p class="text-small text-muted">Manage parking spaces</p>
+        </div>
+        <ion-icon name="chevron-forward" slot="end"></ion-icon>
+      </ion-button>
+
+      <ion-button expand="block" fill="clear" (click)="goToSettings()" class="menu-button">
+        <ion-icon name="settings" slot="start" size="large"></ion-icon>
+        <div class="text-left">
+          <p>Settings</p>
+          <p class="text-small text-muted">App preferences</p>
+        </div>
+        <ion-icon name="chevron-forward" slot="end"></ion-icon>
+      </ion-button>
+
+      <ion-button expand="block" fill="clear" (click)="goToHelp()" class="menu-button">
+        <ion-icon name="help-circle" slot="start" size="large"></ion-icon>
+        <div class="text-left">
+          <p>Help & Support</p>
+          <p class="text-small text-muted">FAQs and support</p>
+        </div>
+        <ion-icon name="chevron-forward" slot="end"></ion-icon>
+      </ion-button>
+
+      <ion-button expand="block" fill="clear" (click)="logout()" class="menu-button mt-lg">
+        <ion-icon name="log-out" slot="start" size="large" color="danger"></ion-icon>
+        <p color="danger">Logout</p>
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

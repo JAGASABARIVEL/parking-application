@@ -1,0 +1,189 @@
+<!-- ==================== BOOKING FLOW PAGE ==================== -->
+
+<!-- booking/booking-flow/booking-flow.page.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Book Parking</ion-title>
+  </ion-toolbar>
+  <ion-progress-bar [value]="currentStep / 4"></ion-progress-bar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Step 1: Select Vehicle -->
+  <div *ngIf="currentStep === 1" class="booking-step">
+    <h2 class="mb-lg">Select Vehicle</h2>
+    
+    <div *ngIf="vehicles.length === 0" class="empty-state">
+      <ion-icon name="car"></ion-icon>
+      <p>No vehicles registered</p>
+      <ion-button (click)="addNewVehicle()" color="primary">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Register Vehicle
+      </ion-button>
+    </div>
+
+    <ion-radio-group [(ngModel)]="selectedVehicleId" [compareWith]="compareVehicles">
+      <div *ngFor="let vehicle of vehicles" class="vehicle-option">
+        <ion-card [class.selected]="selectedVehicleId === vehicle.id">
+          <ion-card-content>
+            <div class="flex-between">
+              <div>
+                <h3>{{ vehicle.vehicle_number }}</h3>
+                <p class="text-small text-muted">{{ vehicle.vehicle_model }} - {{ vehicle.vehicle_color }}</p>
+                <p class="text-small">{{ vehicle.vehicle_type }}</p>
+              </div>
+              <ion-radio [value]="vehicle.id"></ion-radio>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </ion-radio-group>
+
+    <div class="mt-lg">
+      <ion-button expand="block" (click)="nextStep()" [disabled]="!selectedVehicleId">
+        Continue
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Step 2: Select Time Slots -->
+  <div *ngIf="currentStep === 2" class="booking-step">
+    <h2 class="mb-lg">Select Booking Duration</h2>
+
+    <ion-segment [(ngModel)]="selectedBookingType" (ionChange)="onBookingTypeChange()">
+      <ion-segment-button value="hourly">Hourly</ion-segment-button>
+      <ion-segment-button value="daily">Daily</ion-segment-button>
+      <ion-segment-button value="weekly">Weekly</ion-segment-button>
+      <ion-segment-button value="monthly">Monthly</ion-segment-button>
+    </ion-segment>
+
+    <div class="mt-lg">
+      <p class="text-small text-muted mb-md">Check-in</p>
+      <ion-datetime 
+        [(ngModel)]="startDateTime"
+        [min]="minDateTime"
+        presentation="date"
+        (ionChange)="onDateTimeChange()"
+      ></ion-datetime>
+    </div>
+
+    <div class="mt-lg">
+      <p class="text-small text-muted mb-md">Check-out</p>
+      <ion-datetime 
+        [(ngModel)]="endDateTime"
+        [min]="startDateTime"
+        presentation="date"
+        (ionChange)="onDateTimeChange()"
+      ></ion-datetime>
+    </div>
+
+    <div class="mt-lg">
+      <ion-card>
+        <ion-card-content>
+          <div class="flex-between mb-md">
+            <p>Duration</p>
+            <p><strong>{{ duration }}</strong></p>
+          </div>
+          <div class="flex-between">
+            <p>Price</p>
+            <p><strong class="text-primary">₹{{ calculatedPrice }}</strong></p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <div class="mt-lg">
+      <ion-button expand="block" fill="outline" (click)="previousStep()">
+        Back
+      </ion-button>
+      <ion-button expand="block" (click)="nextStep()" class="mt-md">
+        Continue
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Step 3: Special Instructions -->
+  <div *ngIf="currentStep === 3" class="booking-step">
+    <h2 class="mb-lg">Additional Instructions</h2>
+
+    <ion-item>
+      <ion-label position="floating">Special Instructions (Optional)</ion-label>
+      <ion-textarea 
+        [(ngModel)]="specialInstructions"
+        placeholder="e.g., Keep away from other vehicles, Please protect from sun, etc."
+        rows="4"
+      ></ion-textarea>
+    </ion-item>
+
+    <div class="mt-lg">
+      <ion-button expand="block" fill="outline" (click)="previousStep()">
+        Back
+      </ion-button>
+      <ion-button expand="block" (click)="nextStep()" class="mt-md">
+        Continue
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Step 4: Payment Method -->
+  <div *ngIf="currentStep === 4" class="booking-step">
+    <h2 class="mb-lg">Payment Method</h2>
+
+    <div class="payment-summary mb-lg">
+      <ion-card>
+        <ion-card-content>
+          <h3>Booking Summary</h3>
+          <div class="flex-between mt-md">
+            <p>Parking Space</p>
+            <p><strong>{{ parkingSpace.title }}</strong></p>
+          </div>
+          <div class="flex-between">
+            <p>Duration</p>
+            <p><strong>{{ duration }}</strong></p>
+          </div>
+          <div class="flex-between">
+            <p>Vehicle</p>
+            <p><strong>{{ selectedVehicle.vehicle_number }}</strong></p>
+          </div>
+          <!--TODO:ion-divider class="my-md"></ion-divider-->
+          <div class="flex-between">
+            <p><strong>Total Amount</strong></p>
+            <p><strong class="text-primary text-lg">₹{{ calculatedPrice }}</strong></p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <h3 class="mb-md">Select Payment Method</h3>
+
+    <ion-radio-group [(ngModel)]="selectedPaymentMethod">
+      <div class="payment-option" *ngFor="let method of availablePaymentMethods">
+        <ion-card [class.selected]="selectedPaymentMethod === method">
+          <ion-card-content>
+            <div class="flex-between">
+              <div>
+                <h4>{{ getPaymentMethodLabel(method) }}</h4>
+                <p class="text-small text-muted">{{ getPaymentMethodDescription(method) }}</p>
+              </div>
+              <ion-radio [value]="method"></ion-radio>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </ion-radio-group>
+
+    <div class="mt-lg">
+      <ion-button expand="block" fill="outline" (click)="previousStep()">
+        Back
+      </ion-button>
+      <ion-button expand="block" (click)="proceedToPayment()" class="mt-md" [disabled]="!selectedPaymentMethod">
+        <ion-icon name="card" slot="start"></ion-icon>
+        Proceed to Payment
+      </ion-button>
+    </div>
+  </div>
+</ion-content>
+

@@ -1,0 +1,189 @@
+<!-- ==================== PARKING DETAILS PAGE ==================== -->
+
+<!-- parking-details/parking-details.page.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Parking Details</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="isLoading" class="spinner">
+    <ion-spinner></ion-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && parkingSpace">
+    <!-- Image Carousel -->
+    <swiper-container [pagination]="true" class="parking-images-slider">
+  <swiper-slide>
+    <ion-img [src]="parkingSpace.image"></ion-img>
+  </swiper-slide>
+  <swiper-slide *ngFor="let img of parkingSpace.images">
+    <ion-img [src]="img.image"></ion-img>
+  </swiper-slide>
+</swiper-container>
+
+    <!-- Header Info -->
+    <div class="header-info mt-lg">
+      <div class="flex-between mb-md">
+        <div>
+          <h1>{{ parkingSpace.title }}</h1>
+          <p class="text-muted">{{ parkingSpace.area }}, {{ parkingSpace.city }}</p>
+        </div>
+        <div class="rating-large">
+          <ion-icon name="star"></ion-icon>
+          <span>{{ parkingSpace.rating }}</span>
+          <p class="text-small">({{ parkingSpace.total_reviews }} reviews)</p>
+        </div>
+      </div>
+
+      <p>{{ parkingSpace.description }}</p>
+
+      <!-- Map Preview -->
+      <div class="map-preview mt-lg mb-lg">
+        <div id="map-{{ parkingSpace.id }}" style="height: 250px;"></div>
+      </div>
+
+      <!-- Address & Distance -->
+      <div class="info-card mb-md">
+        <ion-icon name="location"></ion-icon>
+        <div class="ml-md">
+          <p class="text-small text-muted">Address</p>
+          <p>{{ parkingSpace.address }}</p>
+          <p class="text-small text-primary" *ngIf="distance">{{ distance | distance }}</p>
+        </div>
+      </div>
+
+      <!-- Availability -->
+      <div class="info-card mb-md">
+        <ion-icon name="time"></ion-icon>
+        <div class="ml-md">
+          <p class="text-small text-muted">Operating Hours</p>
+          <p>{{ parkingSpace.available_from | timeFormat }} - {{ parkingSpace.available_until | timeFormat }}</p>
+        </div>
+      </div>
+
+      <!-- Spaces Info -->
+      <div class="info-card mb-md">
+        <ion-icon name="layers"></ion-icon>
+        <div class="ml-md">
+          <p class="text-small text-muted">Available Spaces</p>
+          <ion-progress-bar [value]="parkingSpace.available_spaces / parkingSpace.total_spaces" color="success"></ion-progress-bar>
+          <p class="mt-sm">{{ parkingSpace.available_spaces }}/{{ parkingSpace.total_spaces }} spaces available</p>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="pricing-section mt-lg mb-lg">
+        <h3>Pricing</h3>
+        <div class="price-grid">
+          <div class="price-card">
+            <p class="text-small text-muted">Per Day</p>
+            <h3>₹{{ parkingSpace.price_per_day }}</h3>
+          </div>
+          <div class="price-card">
+            <p class="text-small text-muted">Per Week</p>
+            <h3>₹{{ parkingSpace.price_per_week }}</h3>
+          </div>
+          <div class="price-card">
+            <p class="text-small text-muted">Per Month</p>
+            <h3>₹{{ parkingSpace.price_per_month }}</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- Amenities -->
+      <div class="amenities-section mt-lg mb-lg">
+        <h3>Amenities</h3>
+        <div class="amenities-grid">
+          <div class="amenity-item" *ngIf="parkingSpace.has_security_camera">
+            <ion-icon name="camera"></ion-icon>
+            <p>Security Camera</p>
+          </div>
+          <div class="amenity-item" *ngIf="parkingSpace.has_lighting">
+            <ion-icon name="bulb"></ion-icon>
+            <p>Good Lighting</p>
+          </div>
+          <div class="amenity-item" *ngIf="parkingSpace.has_ev_charging">
+            <ion-icon name="bolt"></ion-icon>
+            <p>EV Charging</p>
+          </div>
+          <div class="amenity-item" *ngIf="parkingSpace.has_surveillance">
+            <ion-icon name="shield-checkmark"></ion-icon>
+            <p>Surveillance</p>
+          </div>
+          <div class="amenity-item" *ngIf="parkingSpace.has_covered">
+            <ion-icon name="home"></ion-icon>
+            <p>Covered Space</p>
+          </div>
+          <div class="amenity-item" *ngIf="parkingSpace.has_24_7_access">
+            <ion-icon name="moon"></ion-icon>
+            <p>24/7 Access</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Owner Info -->
+      <div class="owner-card mb-lg">
+        <div class="flex-between">
+          <div class="flex gap-md">
+            <ion-avatar>
+              <img [src]="parkingSpace.owner.profile_picture || 'assets/default-avatar.png'">
+            </ion-avatar>
+            <div>
+              <h4>{{ parkingSpace.owner.get_full_name }}</h4>
+              <p class="text-small">{{ parkingSpace.owner.owner_total_reviews }} reviews</p>
+              <div class="owner-rating">
+                <ion-icon name="star"></ion-icon>
+                {{ parkingSpace.owner.owner_rating }}
+              </div>
+            </div>
+          </div>
+          <ion-button fill="clear" size="large">
+            <ion-icon name="call"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+
+      <!-- Reviews Section -->
+      <div class="reviews-section mt-lg mb-lg">
+        <div class="flex-between mb-lg">
+          <h3>Reviews</h3>
+          <ion-button fill="clear">See All</ion-button>
+        </div>
+        
+        <div *ngFor="let review of topReviews" class="review-card mb-md">
+          <div class="flex-between mb-md">
+            <div class="flex gap-md">
+              <ion-avatar>
+                <img [src]="review.reviewer_profile_pic || 'assets/default-avatar.png'">
+              </ion-avatar>
+              <div>
+                <p><strong>{{ review.reviewer_name }}</strong></p>
+                <p class="text-small text-muted">{{ review.created_at | date: 'short' }}</p>
+              </div>
+            </div>
+            <div class="rating">
+              <ion-icon name="star" *ngFor="let i of [1,2,3,4,5]" [color]="i <= review.rating ? 'warning' : 'light'"></ion-icon>
+            </div>
+          </div>
+          <p>{{ review.comment }}</p>
+          <div class="tags mt-md">
+            <ion-chip *ngFor="let tag of review.tags" size="small">{{ tag }}</ion-chip>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA Button -->
+      <div class="sticky-footer">
+        <ion-button expand="block" size="large" color="primary" (click)="startBooking()">
+          <ion-icon name="calendar" slot="start"></ion-icon>
+          Book Parking Space
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>

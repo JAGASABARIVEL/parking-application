@@ -1,0 +1,109 @@
+<!-- ==================== OWNER DASHBOARD PAGE ==================== -->
+
+<!-- owner-dashboard/dashboard/dashboard.page.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Owner Dashboard</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Stats Overview -->
+  <div class="stats-grid mb-lg">
+    <ion-card class="stat-card">
+      <ion-card-content>
+        <p class="text-small text-muted">Total Revenue</p>
+        <h2 class="text-primary">₹{{ totalRevenue }}</h2>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="stat-card">
+      <ion-card-content>
+        <p class="text-small text-muted">Active Bookings</p>
+        <h2 class="text-success">{{ activeBookingsCount }}</h2>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="stat-card">
+      <ion-card-content>
+        <p class="text-small text-muted">Total Bookings</p>
+        <h2 class="text-info">{{ totalBookingsCount }}</h2>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="stat-card">
+      <ion-card-content>
+        <p class="text-small text-muted">Avg Rating</p>
+        <h2 class="text-warning">{{ averageRating }}</h2>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons mb-lg">
+    <ion-button expand="block" color="primary" (click)="addNewSpace()">
+      <ion-icon name="add-circle" slot="start"></ion-icon>
+      Add Parking Space
+    </ion-button>
+  </div>
+
+  <!-- Parking Spaces -->
+  <h3 class="mb-md">Your Parking Spaces</h3>
+
+  <div *ngIf="isLoading" class="spinner">
+    <ion-spinner></ion-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && parkingSpaces.length === 0" class="empty-state">
+    <ion-icon name="location"></ion-icon>
+    <p>No parking spaces yet</p>
+  </div>
+
+  <ion-card 
+    *ngFor="let space of parkingSpaces" 
+    (click)="viewSpaceDetails(space)"
+    class="space-card"
+  >
+    <ion-img [src]="space.image" style="height: 150px;"></ion-img>
+    <ion-card-content>
+      <div class="flex-between mb-md">
+        <div>
+          <h3>{{ space.title }}</h3>
+          <p class="text-small text-muted">{{ space.area }}</p>
+        </div>
+        <ion-badge [color]="space.status === 'available' ? 'success' : 'warning'">
+          {{ space.status }}
+        </ion-badge>
+      </div>
+
+      <div class="flex-between">
+        <div>
+          <p class="text-small text-muted">Available</p>
+          <p>{{ space.available_spaces }}/{{ space.total_spaces }}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-small text-muted">Rating</p>
+          <div class="rating">
+            <ion-icon name="star" color="warning"></ion-icon>
+            {{ space.rating }}
+          </div>
+        </div>
+      </div>
+
+      <div class="actions mt-md flex gap-md">
+        <ion-button size="small" fill="outline" (click)="editSpace(space); $event.stopPropagation()">
+          <ion-icon name="pencil"></ion-icon>
+        </ion-button>
+        <ion-button size="small" fill="outline" (click)="viewBookings(space); $event.stopPropagation()">
+          <ion-icon name="calendar"></ion-icon>
+        </ion-button>
+        <ion-button size="small" fill="outline" (click)="trackDriver(space); $event.stopPropagation()">
+          <ion-icon name="locate"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

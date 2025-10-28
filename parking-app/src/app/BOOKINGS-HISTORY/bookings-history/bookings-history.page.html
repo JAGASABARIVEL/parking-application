@@ -1,0 +1,84 @@
+<!-- ==================== BOOKINGS HISTORY PAGE ==================== -->
+
+<!-- bookings-history/bookings-history.page.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>My Bookings</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Tabs -->
+  <ion-segment [(ngModel)]="selectedTab" (ionChange)="onTabChange()">
+    <ion-segment-button value="all">All</ion-segment-button>
+    <ion-segment-button value="upcoming">Upcoming</ion-segment-button>
+    <ion-segment-button value="completed">Completed</ion-segment-button>
+  </ion-segment>
+
+  <!-- Bookings List -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div *ngIf="isLoading" class="spinner mt-lg">
+    <ion-spinner></ion-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && filteredBookings.length === 0" class="empty-state mt-lg">
+    <ion-icon name="calendar"></ion-icon>
+    <p>No {{ selectedTab }} bookings</p>
+  </div>
+
+  <ion-card 
+    *ngFor="let booking of filteredBookings" 
+    (click)="viewBookingDetails(booking)"
+    class="booking-history-card"
+  >
+    <ion-card-content>
+      <div class="flex-between mb-md">
+        <div>
+          <h3>{{ booking.parking_space.title }}</h3>
+          <p class="text-small text-muted">{{ booking.parking_space.area }}</p>
+        </div>
+        <ion-badge [color]="getStatusColor(booking.status)">
+          {{ booking.status | titlecase }}
+        </ion-badge>
+      </div>
+
+      <div class="flex-between mb-md">
+        <div>
+          <p class="text-small text-muted">Check-in</p>
+          <p>{{ booking.start_datetime | date: 'short' }}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-small text-muted">Check-out</p>
+          <p>{{ booking.end_datetime | date: 'short' }}</p>
+        </div>
+      </div>
+
+      <!-- TODO: ion-divider class="my-md"></ion-divider-->
+
+      <div class="flex-between">
+        <div>
+          <p class="text-small text-muted">Vehicle</p>
+          <p>{{ booking.vehicle.vehicle_number }}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-small text-muted">Total Amount</p>
+          <p class="text-primary"><strong>₹{{ booking.total_price }}</strong></p>
+        </div>
+      </div>
+
+      <!-- Review Button for completed bookings -->
+      <div *ngIf="booking.status === 'completed' && !booking.review" class="mt-md">
+        <ion-button expand="block" fill="outline" size="small" (click)="reviewBooking(booking); $event.stopPropagation()">
+          <ion-icon name="star" slot="start"></ion-icon>
+          Leave a Review
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
