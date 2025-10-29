@@ -6,12 +6,16 @@ import { HomePage } from './home.page';
 
 import { HomePageRoutingModule } from './home-routing.module';
 import { HttpClientModule } from '@angular/common/http';
+import { HeaderComponent } from '../shared/components/header/header/header.component';
+import { BottomTabsComponent } from '../shared/components/bottom-tabs/bottom-tabs/bottom-tabs.component';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
+    HeaderComponent,
+    BottomTabsComponent,
 
     HttpClientModule,
 

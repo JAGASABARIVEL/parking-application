@@ -1,0 +1,87 @@
+<!-- vehicles/vehicles.page.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>My Vehicles</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="addVehicle()">
+        <ion-icon name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div *ngIf="isLoading" class="spinner">
+    <ion-spinner></ion-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && vehicles.length === 0" class="empty-state">
+    <ion-icon name="car-outline"></ion-icon>
+    <h2>No vehicles registered</h2>
+    <p>Add your first vehicle to start booking parking</p>
+    <ion-button (click)="addVehicle()" class="mt-lg">
+      <ion-icon name="add" slot="start"></ion-icon>
+      Add Vehicle
+    </ion-button>
+  </div>
+
+  <ion-card *ngFor="let vehicle of vehicles" class="vehicle-card">
+    <ion-card-content>
+      <div class="flex-between mb-md">
+        <div>
+          <h2>{{ vehicle.vehicle_number }}</h2>
+          <p class="text-muted">{{ vehicle.vehicle_model }}</p>
+        </div>
+        <ion-badge [color]="vehicle.is_active ? 'success' : 'danger'">
+          {{ vehicle.is_active ? 'Active' : 'Inactive' }}
+        </ion-badge>
+      </div>
+
+      <div class="vehicle-details mb-md">
+        <div class="detail-row">
+          <ion-icon name="car-sport"></ion-icon>
+          <span>{{ vehicle.vehicle_type }}</span>
+        </div>
+        <div class="detail-row">
+          <ion-icon name="color-palette"></ion-icon>
+          <span>{{ vehicle.vehicle_color }}</span>
+        </div>
+        <div class="detail-row">
+          <ion-icon name="card"></ion-icon>
+          <span>DL: {{ vehicle.dl_number }}</span>
+        </div>
+        <div class="detail-row">
+          <ion-icon name="calendar"></ion-icon>
+          <span>Valid till: {{ vehicle.dl_expiry_date | date: 'mediumDate' }}</span>
+        </div>
+      </div>
+
+      <div class="vehicle-dimensions mb-md">
+        <p class="text-small text-muted">Dimensions</p>
+        <div class="flex gap-md">
+          <span><strong>L:</strong> {{ vehicle.length_in_meters }}m</span>
+          <span><strong>W:</strong> {{ vehicle.width_in_meters }}m</span>
+          <span><strong>H:</strong> {{ vehicle.height_in_meters }}m</span>
+        </div>
+      </div>
+
+      <div class="flex gap-md">
+        <ion-button expand="block" fill="outline" (click)="editVehicle(vehicle)">
+          <ion-icon name="pencil" slot="start"></ion-icon>
+          Edit
+        </ion-button>
+        <ion-button expand="block" color="danger" fill="outline" (click)="deleteVehicle(vehicle)">
+          <ion-icon name="trash" slot="start"></ion-icon>
+          Delete
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

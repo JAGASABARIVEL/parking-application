@@ -1,0 +1,158 @@
+<!-- profile/edit-profile/edit-profile.page.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Edit Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+    <!-- Profile Picture -->
+    <div class="profile-picture-section text-center mb-lg">
+      <ion-avatar class="mx-auto mb-md" style="width: 120px; height: 120px;">
+        <img [src]="profilePicturePreview || currentUser?.profile_picture || 'assets/default-avatar.png'">
+      </ion-avatar>
+      <ion-button fill="outline" size="small" (click)="selectProfilePicture()">
+        <ion-icon name="camera" slot="start"></ion-icon>
+        Change Photo
+      </ion-button>
+      <input
+        type="file"
+        #fileInput
+        (change)="onFileSelected($event)"
+        accept="image/*"
+        style="display: none;"
+      />
+    </div>
+
+    <!-- Personal Information -->
+    <h3 class="mb-md">Personal Information</h3>
+
+    <ion-item class="mb-md">
+      <ion-input
+        formControlName="firstName"
+        label="First Name"
+        labelPlacement="floating"
+        type="text"
+      ></ion-input>
+    </ion-item>
+    <div *ngIf="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched" class="error-message">
+      <p class="text-small text-danger">First name is required</p>
+    </div>
+
+    <ion-item class="mb-md">
+      <ion-input
+        formControlName="lastName"
+        label="Last Name"
+        labelPlacement="floating"
+        type="text"
+      ></ion-input>
+    </ion-item>
+
+    <ion-item class="mb-md">
+      <ion-input
+        formControlName="username"
+        label="Username"
+        labelPlacement="floating"
+        type="text"
+        [readonly]="true"
+      ></ion-input>
+    </ion-item>
+
+    <ion-item class="mb-md">
+      <ion-input
+        formControlName="email"
+        label="Email"
+        labelPlacement="floating"
+        type="email"
+      ></ion-input>
+    </ion-item>
+    <div *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" class="error-message">
+      <p class="text-small text-danger">Valid email is required</p>
+    </div>
+
+    <ion-item class="mb-md">
+      <ion-input
+        formControlName="phoneNumber"
+        label="Phone Number"
+        labelPlacement="floating"
+        type="tel"
+      ></ion-input>
+    </ion-item>
+
+    <!-- Bio -->
+    <h3 class="mt-lg mb-md">About</h3>
+
+    <ion-item class="mb-md">
+      <ion-textarea
+        formControlName="bio"
+        label="Bio"
+        labelPlacement="floating"
+        rows="4"
+        placeholder="Tell us about yourself..."
+      ></ion-textarea>
+    </ion-item>
+
+    <!-- User Type -->
+    <h3 class="mt-lg mb-md">Account Type</h3>
+
+    <ion-item class="mb-lg">
+      <ion-select
+        formControlName="userType"
+        label="I am a"
+        labelPlacement="floating"
+      >
+        <ion-select-option value="driver">Driver</ion-select-option>
+        <ion-select-option value="owner">Owner</ion-select-option>
+        <ion-select-option value="both">Both</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Submit Buttons -->
+    <ion-button 
+      expand="block" 
+      type="submit" 
+      [disabled]="profileForm.invalid || isLoading"
+      class="mb-md"
+    >
+      <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+      <span *ngIf="!isLoading">Save Changes</span>
+    </ion-button>
+
+    <ion-button 
+      expand="block" 
+      fill="outline" 
+      (click)="cancel()"
+      [disabled]="isLoading"
+    >
+      Cancel
+    </ion-button>
+
+    <!-- Danger Zone -->
+    <div class="danger-zone mt-lg">
+      <h3 class="mb-md text-danger">Danger Zone</h3>
+      <ion-button 
+        expand="block" 
+        color="danger"
+        fill="outline"
+        (click)="changePassword()"
+      >
+        <ion-icon name="key" slot="start"></ion-icon>
+        Change Password
+      </ion-button>
+      <ion-button 
+        expand="block" 
+        color="danger"
+        fill="outline"
+        (click)="deleteAccount()"
+        class="mt-md"
+      >
+        <ion-icon name="trash" slot="start"></ion-icon>
+        Delete Account
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

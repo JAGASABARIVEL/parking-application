@@ -1,0 +1,23 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button *ngIf="showMenu"></ion-menu-button>
+      <ion-back-button *ngIf="showBack" [defaultHref]="backUrl"></ion-back-button>
+    </ion-buttons>
+    
+    <ion-title>{{ title }}</ion-title>
+    
+    <ion-buttons slot="end" *ngIf="showNotifications">
+      <ion-button (click)="toggleView()">
+        <ion-icon [name]="viewMode === 'list' ? 'map' : 'list'"></ion-icon>
+      </ion-button>
+      <ion-button (click)="openNotifications()">
+        <ion-icon name="notifications"></ion-icon>
+        <ion-badge *ngIf="notificationCount > 0" color="danger">
+          {{ notificationCount }}
+        </ion-badge>
+      </ion-button>
+    </ion-buttons>
+    
+  </ion-toolbar>
+</ion-header>

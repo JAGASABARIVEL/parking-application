@@ -1,0 +1,136 @@
+// app/app.component.scss
+
+// Menu Header Styles
+.menu-header {
+  padding: 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
+
+  ion-avatar {
+    width: 64px;
+    height: 64px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .user-info {
+    flex: 1;
+    color: white;
+
+    h3 {
+      margin: 0 0 4px 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0 0 8px 0;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    ion-badge {
+      font-size: 11px;
+      padding: 4px 8px;
+    }
+  }
+}
+
+// Menu List Styles
+.menu-list {
+  padding: 8px 0;
+
+  ion-item {
+    --padding-start: 16px;
+    --inner-padding-end: 16px;
+    --min-height: 48px;
+    font-size: 15px;
+    margin: 2px 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      --background: var(--ion-color-light);
+    }
+
+    ion-icon {
+      font-size: 22px;
+      margin-right: 16px;
+      color: var(--ion-color-medium);
+    }
+
+    ion-label {
+      font-weight: 500;
+    }
+
+    ion-badge {
+      font-size: 11px;
+      padding: 4px 8px;
+    }
+  }
+
+  ion-item-divider {
+    --background: transparent;
+    --color: var(--ion-color-medium);
+    --padding-start: 16px;
+    --padding-top: 16px;
+    --padding-bottom: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-height: auto;
+
+    &:first-of-type {
+      --padding-top: 8px;
+    }
+  }
+}
+
+// Active Menu Item
+.active-menu-item {
+  --background: var(--ion-color-primary);
+  --color: white;
+
+  ion-icon {
+    color: white !important;
+  }
+
+  ion-label {
+    color: white;
+    font-weight: 600;
+  }
+}
+
+// App Version
+.app-version {
+  padding: 20px;
+  text-align: center;
+  border-top: 1px solid var(--ion-color-light);
+  margin-top: auto;
+
+  p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--ion-color-medium);
+  }
+}
+
+// Split Pane (for larger screens)
+@media (min-width: 768px) {
+  ion-split-pane {
+    --side-width: 280px;
+  }
+}
+
+// Dark Mode Support
+@media (prefers-color-scheme: dark) {
+  .menu-header {
+    background: linear-gradient(135deg, var(--ion-color-primary-shade) 0%, var(--ion-color-primary-tint) 100%);
+  }
+
+  .active-menu-item {
+    --background: var(--ion-color-primary-shade);
+  }
+}

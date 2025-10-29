@@ -1,0 +1,156 @@
+<!-- auth/register/register.page.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/auth/login"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Create Account</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="auth-container">
+    <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+      <!-- User Type Selection -->
+      <div class="mb-lg">
+        <p class="text-small text-muted mb-md">I am a:</p>
+        <ion-segment formControlName="userType" (ionChange)="onUserTypeChange()">
+          <ion-segment-button value="driver">
+            <ion-icon name="car"></ion-icon>
+            <ion-label>Driver</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="owner">
+            <ion-icon name="business"></ion-icon>
+            <ion-label>Owner</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="both">
+            <ion-icon name="apps"></ion-icon>
+            <ion-label>Both</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+
+      <!-- Personal Information -->
+      <ion-item class="mb-md">
+        <ion-input
+          formControlName="username"
+          label="Username"
+          labelPlacement="floating"
+          type="text"
+          placeholder="Choose a username"
+        ></ion-input>
+      </ion-item>
+      <div *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched" class="error-message">
+        <p class="text-small text-danger">Username is required</p>
+      </div>
+
+      <ion-item class="mb-md">
+        <ion-input
+          formControlName="email"
+          label="Email"
+          labelPlacement="floating"
+          type="email"
+          placeholder="your@email.com"
+        ></ion-input>
+      </ion-item>
+      <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" class="error-message">
+        <p class="text-small text-danger">Valid email is required</p>
+      </div>
+
+      <div class="flex gap-md mb-md">
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="firstName"
+            label="First Name"
+            labelPlacement="floating"
+            type="text"
+            placeholder="John"
+          ></ion-input>
+        </ion-item>
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="lastName"
+            label="Last Name"
+            labelPlacement="floating"
+            type="text"
+            placeholder="Doe"
+          ></ion-input>
+        </ion-item>
+      </div>
+
+      <ion-item class="mb-md">
+        <ion-input
+          formControlName="phoneNumber"
+          label="Phone Number"
+          labelPlacement="floating"
+          type="tel"
+          placeholder="+91 98765 43210"
+        ></ion-input>
+      </ion-item>
+      <div *ngIf="registerForm.get('phoneNumber')?.invalid && registerForm.get('phoneNumber')?.touched" class="error-message">
+        <p class="text-small text-danger">Valid phone number is required</p>
+      </div>
+
+      <!-- Password -->
+      <ion-item class="mb-md">
+        <ion-input
+          formControlName="password"
+          label="Password"
+          labelPlacement="floating"
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="Minimum 8 characters"
+        ></ion-input>
+        <ion-button slot="end" fill="clear" (click)="togglePassword()">
+          <ion-icon [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" class="error-message">
+        <p class="text-small text-danger">Password must be at least 8 characters</p>
+      </div>
+
+      <ion-item class="mb-md">
+        <ion-input
+          formControlName="passwordConfirm"
+          label="Confirm Password"
+          labelPlacement="floating"
+          [type]="showConfirmPassword ? 'text' : 'password'"
+          placeholder="Re-enter password"
+        ></ion-input>
+        <ion-button slot="end" fill="clear" (click)="toggleConfirmPassword()">
+          <ion-icon [name]="showConfirmPassword ? 'eye-off' : 'eye'"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <div *ngIf="registerForm.get('passwordConfirm')?.invalid && registerForm.get('passwordConfirm')?.touched" class="error-message">
+        <p class="text-small text-danger">Passwords must match</p>
+      </div>
+
+      <!-- Terms and Conditions -->
+      <div class="mb-lg">
+        <ion-checkbox formControlName="acceptTerms">
+          I agree to the 
+          <ion-button fill="clear" size="small" (click)="showTerms()">Terms & Conditions</ion-button>
+        </ion-checkbox>
+      </div>
+
+      <!-- Register Button -->
+      <ion-button 
+        expand="block" 
+        type="submit" 
+        [disabled]="registerForm.invalid || isLoading"
+        class="mb-md"
+      >
+        <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+        <span *ngIf="!isLoading">Create Account</span>
+      </ion-button>
+
+      <!-- Login Link -->
+      <div class="text-center mt-md">
+        <p>Already have an account? 
+          <ion-button fill="clear" (click)="goToLogin()">
+            Sign In
+          </ion-button>
+        </p>
+      </div>
+    </form>
+  </div>
+</ion-content>

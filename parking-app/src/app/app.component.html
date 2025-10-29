@@ -1,3 +1,182 @@
+<!-- app/app.component.html -->
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <ion-split-pane contentId="main-content">
+    <!-- Side Menu -->
+    <ion-menu contentId="main-content" type="overlay">
+      <ion-content>
+        <!-- Menu Header -->
+        <ion-header class="ion-no-border">
+          <ion-toolbar color="primary">
+            <div class="menu-header" *ngIf="currentUser">
+              <ion-avatar>
+                <img [src]="currentUser.profile_picture || 'assets/default-avatar.png'" />
+              </ion-avatar>
+              <div class="user-info">
+                <h3>{{ currentUser.first_name }} {{ currentUser.last_name }}</h3>
+                <p>{{ currentUser.email }}</p>
+                <ion-badge [color]="getUserTypeBadgeColor(currentUser.user_type)">
+                  {{ currentUser.user_type | titlecase }}
+                </ion-badge>
+              </div>
+            </div>
+          </ion-toolbar>
+        </ion-header>
+
+        <!-- Menu Items -->
+        <ion-list class="menu-list">
+          <!-- Main Navigation -->
+          <ion-menu-toggle auto-hide="false">
+            <ion-item 
+              button 
+              routerLink="/home" 
+              routerLinkActive="active-menu-item"
+              [routerLinkActiveOptions]="{exact: true}"
+              detail="false"
+            >
+              <ion-icon name="home" slot="start"></ion-icon>
+              <ion-label>Home</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+
+          <!-- Driver/Both Menu Items -->
+          <div *ngIf="currentUser && (currentUser.user_type === 'driver' || currentUser.user_type === 'both')">
+            <ion-item-divider>
+              <ion-label>Driver</ion-label>
+            </ion-item-divider>
+
+            <ion-menu-toggle auto-hide="false">
+              <ion-item 
+                button 
+                routerLink="/bookings-history" 
+                routerLinkActive="active-menu-item"
+                detail="false"
+              >
+                <ion-icon name="calendar" slot="start"></ion-icon>
+                <ion-label>My Bookings</ion-label>
+                <ion-badge *ngIf="activeBookingsCount > 0" color="danger" slot="end">
+                  {{ activeBookingsCount }}
+                </ion-badge>
+              </ion-item>
+            </ion-menu-toggle>
+
+            <ion-menu-toggle auto-hide="false">
+              <ion-item 
+                button 
+                routerLink="/vehicles" 
+                routerLinkActive="active-menu-item"
+                detail="false"
+              >
+                <ion-icon name="car" slot="start"></ion-icon>
+                <ion-label>My Vehicles</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+          </div>
+
+          <!-- Owner/Both Menu Items -->
+          <div *ngIf="currentUser && (currentUser.user_type === 'owner' || currentUser.user_type === 'both')">
+            <ion-item-divider>
+              <ion-label>Owner</ion-label>
+            </ion-item-divider>
+
+            <ion-menu-toggle auto-hide="false">
+              <ion-item 
+                button 
+                routerLink="/owner-dashboard" 
+                routerLinkActive="active-menu-item"
+                detail="false"
+              >
+                <ion-icon name="business" slot="start"></ion-icon>
+                <ion-label>Dashboard</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+
+            <ion-menu-toggle auto-hide="false">
+              <ion-item 
+                button 
+                routerLink="/add-parking" 
+                routerLinkActive="active-menu-item"
+                detail="false"
+              >
+                <ion-icon name="add-circle" slot="start"></ion-icon>
+                <ion-label>Add Parking Space</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+          </div>
+
+          <!-- Account Section -->
+          <ion-item-divider>
+            <ion-label>Account</ion-label>
+          </ion-item-divider>
+
+          <ion-menu-toggle auto-hide="false">
+            <ion-item 
+              button 
+              routerLink="/profile" 
+              routerLinkActive="active-menu-item"
+              detail="false"
+            >
+              <ion-icon name="person" slot="start"></ion-icon>
+              <ion-label>Profile</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+
+          <ion-menu-toggle auto-hide="false">
+            <ion-item 
+              button 
+              routerLink="/settings" 
+              routerLinkActive="active-menu-item"
+              detail="false"
+            >
+              <ion-icon name="settings" slot="start"></ion-icon>
+              <ion-label>Settings</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+
+          <!-- Other Options -->
+          <ion-item-divider>
+            <ion-label>Support</ion-label>
+          </ion-item-divider>
+
+          <ion-menu-toggle auto-hide="false">
+            <ion-item button (click)="openHelp()" detail="false">
+              <ion-icon name="help-circle" slot="start"></ion-icon>
+              <ion-label>Help & Support</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+
+          <ion-menu-toggle auto-hide="false">
+            <ion-item button (click)="shareApp()" detail="false">
+              <ion-icon name="share-social" slot="start"></ion-icon>
+              <ion-label>Share App</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+
+          <ion-menu-toggle auto-hide="false">
+            <ion-item button (click)="rateApp()" detail="false">
+              <ion-icon name="star" slot="start"></ion-icon>
+              <ion-label>Rate Us</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+
+          <!-- Logout -->
+          <ion-item-divider></ion-item-divider>
+
+          <ion-menu-toggle auto-hide="false">
+            <ion-item button (click)="logout()" detail="false" lines="none">
+              <ion-icon name="log-out" slot="start" color="danger"></ion-icon>
+              <ion-label color="danger">Logout</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+        </ion-list>
+
+        <!-- App Version -->
+        <div class="app-version">
+          <p>Version 1.0.0</p>
+        </div>
+      </ion-content>
+    </ion-menu>
+
+    <!-- Main Content -->
+    <ion-router-outlet id="main-content"></ion-router-outlet>
+  </ion-split-pane>
 </ion-app>

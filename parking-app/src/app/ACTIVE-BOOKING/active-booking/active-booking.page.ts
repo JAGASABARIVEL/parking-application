@@ -1,10 +1,10 @@
-// ============================= ACTIVE-BOOKING/ACTIVE-BOOKING.PAGE.TS =============================
-import { Component, OnInit } from '@angular/core';
+// ACTIVE-BOOKING/active-booking/active-booking.page.ts (Updated)
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BookingService } from '../../core/services/booking.service';
 import { LocationService } from '../../core/services/location.service';
-//import { CallNumber } from '@ionic-native/call-number/ngx';
 import { AlertController } from '@ionic/angular';
+import { GoogleMapsService } from 'src/app/core/services/google-maps';
 
 @Component({
   selector: 'app-active-booking',
@@ -12,15 +12,20 @@ import { AlertController } from '@ionic/angular';
   styleUrls: ['active-booking.page.scss'],
   standalone: false
 })
-export class ActiveBookingPage implements OnInit {
+export class ActiveBookingPage implements OnInit, OnDestroy, AfterViewInit {
   booking: any = null;
   timeRemaining = '';
   private countdownInterval: any;
+  private locationTrackingInterval: any;
+  private map: any = null;
+  private userMarker: any = null;
+  private destinationMarker: any = null;
+  private routeRenderer: any = null;
 
   constructor(
     private bookingService: BookingService,
     private locationService: LocationService,
-    //private callNumber: CallNumber,
+    private googleMapsService: GoogleMapsService,
     private route: ActivatedRoute,
     private router: Router,
     private alertController: AlertController
@@ -34,15 +39,112 @@ export class ActiveBookingPage implements OnInit {
     });
   }
 
+  ngAfterViewInit() {
+    // Map will be initialized after booking data is loaded
+  }
+
   loadBooking(id: number) {
     this.bookingService.getBookingDetails(id).subscribe(
       (booking) => {
         this.booking = booking;
         this.startCountdown();
+        this.initializeMap();
         this.startLocationTracking();
       },
       (error) => console.error('Error loading booking:', error)
     );
+  }
+
+  async initializeMap() {
+    if (!this.booking) return;
+
+    try {
+      const mapElement = document.getElementById('tracking-map');
+      if (!mapElement) {
+        console.error('Map element not found');
+        return;
+      }
+
+      const destination = {
+        lat: this.booking.parking_space.location.coordinates[1],
+        lng: this.booking.parking_space.location.coordinates[0]
+      };
+
+      // Get user's current location
+      const userLocation = await this.locationService.getCurrentLocation();
+      const userPosition = {
+        lat: userLocation.latitude,
+        lng: userLocation.longitude
+      };
+
+      // Create map centered between user and destination
+      const centerLat = (userPosition.lat + destination.lat) / 2;
+      const centerLng = (userPosition.lng + destination.lng) / 2;
+
+      this.map = await this.googleMapsService.createMap(mapElement, {
+        center: { lat: centerLat, lng: centerLng },
+        zoom: 13
+      });
+
+      // Add destination marker
+      this.destinationMarker = await this.googleMapsService.addMarker(
+        this.map,
+        destination,
+        {
+          title: this.booking.parking_space.title,
+          animation: 'DROP'
+        }
+      );
+
+      // Add info window to destination
+      const infoContent = `
+        <div style="padding: 10px;">
+          <h3 style="margin: 0 0 5px 0;">${this.booking.parking_space.title}</h3>
+          <p style="margin: 0;">${this.booking.parking_space.address}</p>
+        </div>
+      `;
+      await this.googleMapsService.addInfoWindow(this.destinationMarker, infoContent);
+
+      // Add user marker
+      this.userMarker = await this.googleMapsService.addMarker(
+        this.map,
+        userPosition,
+        {
+          title: 'Your Location',
+          icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+          animation: 'DROP'
+        }
+      );
+
+      // Calculate and display route
+      await this.updateRoute(userPosition, destination);
+    } catch (error) {
+      console.error('Error initializing map:', error);
+    }
+  }
+
+  async updateRoute(origin: { lat: number; lng: number }, destination: { lat: number; lng: number }) {
+    try {
+      // Remove old route if exists
+      if (this.routeRenderer) {
+        this.routeRenderer.setMap(null);
+      }
+
+      // Calculate new route
+      const route = await this.googleMapsService.calculateRoute(origin, destination);
+      this.routeRenderer = await this.googleMapsService.displayRoute(this.map, route);
+
+      // Calculate distance and ETA
+      const distanceData = await this.googleMapsService.calculateDistance(origin, destination);
+      
+      // Update booking location tracking
+      if (this.booking.location_tracking) {
+        this.booking.location_tracking.distance_remaining = distanceData.distance;
+        this.booking.location_tracking.eta_minutes = Math.round(distanceData.duration);
+      }
+    } catch (error) {
+      console.error('Error updating route:', error);
+    }
   }
 
   startCountdown() {
@@ -77,24 +179,53 @@ export class ActiveBookingPage implements OnInit {
   startLocationTracking() {
     if (!this.booking || this.booking.status !== 'active') return;
 
-    setInterval(() => {
-      this.locationService.getCurrentLocation().then(
-        (location) => {
-          this.bookingService.updateLocation(
-            this.booking.id,
-            location.latitude,
-            location.longitude,
-            0,
-            15
-          ).subscribe(
-            () => {
-              // Location updated
-            },
-            (error) => console.error('Error updating location:', error)
-          );
+    // Update location every 30 seconds
+    this.locationTrackingInterval = setInterval(async () => {
+      try {
+        const location = await this.locationService.getCurrentLocation();
+        const userPosition = {
+          lat: location.latitude,
+          lng: location.longitude
+        };
+
+        const destination = {
+          lat: this.booking.parking_space.location.coordinates[1],
+          lng: this.booking.parking_space.location.coordinates[0]
+        };
+
+        // Update user marker position
+        if (this.userMarker) {
+          this.userMarker.setPosition(userPosition);
         }
-      );
-    }, 30000); // Update every 30 seconds
+
+        // Update route
+        await this.updateRoute(userPosition, destination);
+
+        // Calculate distance for backend
+        const distance = this.locationService.calculateDistance(
+          location.latitude,
+          location.longitude,
+          destination.lat,
+          destination.lng
+        );
+
+        const eta = this.locationService.calculateETA(distance);
+
+        // Send location update to backend
+        this.bookingService.updateLocation(
+          this.booking.id,
+          location.latitude,
+          location.longitude,
+          distance,
+          eta
+        ).subscribe(
+          () => console.log('Location updated'),
+          (error) => console.error('Error updating location:', error)
+        );
+      } catch (error) {
+        console.error('Error tracking location:', error);
+      }
+    }, 30000); // Every 30 seconds
   }
 
   getStatusColor(status: string): string {
@@ -122,10 +253,9 @@ export class ActiveBookingPage implements OnInit {
   }
 
   startNavigation() {
-    if (!this.booking || !this.booking.location_tracking) return;
-    // Open maps
-    const lat = this.booking.location_tracking.destination_latitude;
-    const lng = this.booking.location_tracking.destination_longitude;
+    if (!this.booking || !this.booking.parking_space) return;
+    const lat = this.booking.parking_space.location.coordinates[1];
+    const lng = this.booking.parking_space.location.coordinates[0];
     window.open(`https://maps.google.com/?q=${lat},${lng}`, '_system');
   }
 
@@ -133,6 +263,7 @@ export class ActiveBookingPage implements OnInit {
     this.bookingService.updateBookingStatus(this.booking.id, 'parked').subscribe(
       (updated) => {
         this.booking = updated;
+        this.stopLocationTracking();
       },
       (error) => console.error('Error updating booking:', error)
     );
@@ -159,18 +290,16 @@ export class ActiveBookingPage implements OnInit {
     }).then(alert => alert.present());
   }
 
-  //callOwner() {
-  //  if (this.booking?.parking_space?.owner?.phone_number) {
-  //    this.callNumber.callNumber(this.booking.parking_space.owner.phone_number, true)
-  //      .catch(err => console.error('Error making call:', err));
-  //  }
-  //}
-
   callOwner() {
     if (this.booking?.parking_space?.owner?.phone_number) {
       const phoneNumber = this.booking.parking_space.owner.phone_number;
-      // Use the Browser API to open the phone dialer
       window.open(`tel:${phoneNumber}`, '_system');
+    }
+  }
+
+  private stopLocationTracking() {
+    if (this.locationTrackingInterval) {
+      clearInterval(this.locationTrackingInterval);
     }
   }
 
@@ -178,5 +307,6 @@ export class ActiveBookingPage implements OnInit {
     if (this.countdownInterval) {
       clearInterval(this.countdownInterval);
     }
+    this.stopLocationTracking();
   }
 }

@@ -54,16 +54,27 @@ export class BookingFlowPage implements OnInit {
   }
 
   loadParkingSpace() {
-    if (!this.parkingSpaceId) return;
+  if (!this.parkingSpaceId) return;
 
-    this.parkingService.getParkingSpaceDetails(this.parkingSpaceId).subscribe(
-      (space) => {
-        this.parkingSpace = space;
+  this.parkingService.getParkingSpaceDetails(this.parkingSpaceId).subscribe(
+    (space) => {
+      this.parkingSpace = space;
+
+      // Parse if backend sends JSON string
+      if (typeof space.accepted_payment_methods === 'string') {
+        try {
+          this.availablePaymentMethods = JSON.parse(space.accepted_payment_methods);
+        } catch (e) {
+          console.warn('Error parsing payment methods:', e);
+          this.availablePaymentMethods = ['cod', 'razorpay'];
+        }
+      } else {
         this.availablePaymentMethods = space.accepted_payment_methods || ['cod', 'razorpay'];
-      },
-      (error) => console.error('Error loading parking space:', error)
-    );
-  }
+      }
+    },
+    (error) => console.error('Error loading parking space:', error)
+  );
+}
 
   loadVehicles() {
     this.vehicleService.getActiveVehicles().subscribe(
@@ -150,6 +161,7 @@ export class BookingFlowPage implements OnInit {
       return;
     }
     if (this.currentStep < 4) {
+      console.log("selectedVehicleId ", this.selectedVehicleId, this.vehicles);
       this.currentStep++;
     }
   }
@@ -160,13 +172,19 @@ export class BookingFlowPage implements OnInit {
     }
   }
 
+  onVehicleSelect() {
+    this.selectedVehicle = this.vehicles.find(v => v.id === this.selectedVehicleId);
+    this.nextStep();
+  }
+
   proceedToPayment() {
+    
     if (!this.selectedVehicleId || !this.selectedPaymentMethod || !this.parkingSpaceId) {
       this.showAlert('Please complete all steps');
       return;
     }
 
-    this.selectedVehicle = this.vehicles.find(v => v.id === this.selectedVehicleId);
+    
 
     const bookingData = {
       parking_space: this.parkingSpaceId,

@@ -1,17 +1,5 @@
 <!-- home/home.page.html -->
-<ion-header class="ion-no-border">
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title>Find Parking</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="openNotifications()">
-        <ion-icon name="notifications"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<app-header title='Find Parking' (toggleViewEvent)="onToggleView($event)" [showBack]='false' [showMenu]='true'  [showNotifications]='true' [backUrl]='"/home"'></app-header>
 
 <ion-content class="ion-padding">
   <!-- Location Header -->
@@ -27,13 +15,18 @@
     </div>
   </div>
 
-  <!-- Search Bar -->
-  <ion-searchbar 
-    [(ngModel)]="searchText" 
-    (ionChange)="onSearchChange()"
-    placeholder="Search parking by area or landmark"
-    debounce="500"
-  ></ion-searchbar>
+  <!-- Search Bar with Autocomplete -->
+  <div class="search-container">
+    <input
+      #searchInput
+      type="text"
+      class="search-input"
+      [(ngModel)]="searchText"
+      placeholder="Search parking by area or landmark"
+      (input)="onSearchInput()"
+    />
+    <ion-icon name="search" class="search-icon"></ion-icon>
+  </div>
 
   <!-- Filter Buttons -->
   <div class="filter-scroll">
@@ -61,63 +54,74 @@
     </div>
   </div>
 
+  <!-- View Switcher: Map or List -->
+  <div *ngIf="viewMode === 'map'" class="map-view">
+    <div id="home-map" style="height: calc(100vh - 350px); min-height: 400px; border-radius: 12px;"></div>
+  </div>
+
   <!-- Parking Spaces List -->
-  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
+  <div *ngIf="viewMode === 'list'">
+    <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+      <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
 
-  <div *ngIf="isLoading" class="spinner">
-    <ion-spinner></ion-spinner>
+    <div *ngIf="isLoading" class="spinner">
+      <ion-spinner></ion-spinner>
+    </div>
+
+    <div *ngIf="!isLoading && parkingSpaces.length === 0" class="empty-state">
+      <ion-icon name="location-outline"></ion-icon>
+      <p>No parking spaces available in your area</p>
+    </div>
+
+    <ion-card 
+      *ngFor="let space of parkingSpaces" 
+      (click)="viewParkingDetails(space)"
+      class="parking-card"
+    >
+      <ion-img [src]="space.image"></ion-img>
+      
+      <ion-card-content>
+        <div class="flex-between mb-md">
+          <div>
+            <h2>{{ space.title }}</h2>
+            <p class="text-small text-muted">{{ space.area }}</p>
+          </div>
+          <div class="rating-badge">
+            <ion-icon name="star"></ion-icon>
+            {{ space.rating }}
+          </div>
+        </div>
+
+        <p class="text-small">{{ space.address }}</p>
+
+        <div class="amenities mt-md">
+          <span *ngIf="space.has_security_camera" class="amenity-tag">
+            <ion-icon name="camera"></ion-icon> Security
+          </span>
+          <span *ngIf="space.has_lighting" class="amenity-tag">
+            <ion-icon name="bulb"></ion-icon> Lighting
+          </span>
+          <span *ngIf="space.has_ev_charging" class="amenity-tag">
+            <ion-icon name="bolt"></ion-icon> EV
+          </span>
+        </div>
+
+        <div class="flex-between mt-md pt-md" style="border-top: 1px solid #eee;">
+          <div>
+            <p class="text-small text-muted">From</p>
+            <h3 class="price">₹{{ space.price_per_day }}/day</h3>
+          </div>
+          <div class="text-right">
+            <p class="text-small text-muted">Available</p>
+            <p class="text-small"><strong>{{ space.available_spaces }}/{{ space.total_spaces }}</strong></p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
   </div>
-
-  <div *ngIf="!isLoading && parkingSpaces.length === 0" class="empty-state">
-    <ion-icon name="location-outline"></ion-icon>
-    <p>No parking spaces available in your area</p>
-  </div>
-
-  <ion-card 
-    *ngFor="let space of parkingSpaces" 
-    (click)="viewParkingDetails(space)"
-    class="parking-card"
-  >
-    <ion-img [src]="space.image"></ion-img>
-    
-    <ion-card-content>
-      <div class="flex-between mb-md">
-        <div>
-          <h2>{{ space.title }}</h2>
-          <p class="text-small text-muted">{{ space.area }}</p>
-        </div>
-        <div class="rating-badge">
-          <ion-icon name="star"></ion-icon>
-          {{ space.rating }}
-        </div>
-      </div>
-
-      <p class="text-small">{{ space.address }}</p>
-
-      <div class="amenities mt-md">
-        <span *ngIf="space.has_security_camera" class="amenity-tag">
-          <ion-icon name="camera"></ion-icon> Security
-        </span>
-        <span *ngIf="space.has_lighting" class="amenity-tag">
-          <ion-icon name="bulb"></ion-icon> Lighting
-        </span>
-        <span *ngIf="space.has_ev_charging" class="amenity-tag">
-          <ion-icon name="bolt"></ion-icon> EV
-        </span>
-      </div>
-
-      <div class="flex-between mt-md pt-md" style="border-top: 1px solid #eee;">
-        <div>
-          <p class="text-small text-muted">From</p>
-          <h3 class="price">₹{{ space.price_per_day }}/day</h3>
-        </div>
-        <div class="text-right">
-          <p class="text-small text-muted">Available</p>
-          <p class="text-small"><strong>{{ space.available_spaces }}/{{ space.total_spaces }}</strong></p>
-        </div>
-      </div>
-    </ion-card-content>
-  </ion-card>
 </ion-content>
+
+<!-- Add Bottom Tabs -->
+
+<app-bottom-tabs></app-bottom-tabs>

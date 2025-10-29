@@ -1,0 +1,40 @@
+// auth/login/login.page.scss
+// auth/register/register.page.scss
+
+.auth-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.error-message {
+  margin-top: -8px;
+  margin-bottom: 16px;
+}
+
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 24px 0;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--ion-color-medium);
+  }
+  
+  span {
+    position: relative;
+    background: var(--ion-background-color);
+    padding: 0 16px;
+    color: var(--ion-color-medium);
+  }
+}
+
+ion-checkbox {
+  margin-right: 8px;
+}

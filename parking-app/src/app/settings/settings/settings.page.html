@@ -1,0 +1,201 @@
+<!-- settings/settings.page.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Settings</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Notifications -->
+  <div class="settings-section mb-lg">
+    <h3 class="mb-md">Notifications</h3>
+    
+    <ion-item>
+      <ion-label>
+        <h4>Push Notifications</h4>
+        <p>Receive booking updates and reminders</p>
+      </ion-label>
+      <ion-toggle [(ngModel)]="settings.pushNotifications" (ionChange)="saveSettings()"></ion-toggle>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h4>Email Notifications</h4>
+        <p>Get notifications via email</p>
+      </ion-label>
+      <ion-toggle [(ngModel)]="settings.emailNotifications" (ionChange)="saveSettings()"></ion-toggle>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h4>SMS Notifications</h4>
+        <p>Receive important alerts via SMS</p>
+      </ion-label>
+      <ion-toggle [(ngModel)]="settings.smsNotifications" (ionChange)="saveSettings()"></ion-toggle>
+    </ion-item>
+  </div>
+
+  <!-- Location -->
+  <div class="settings-section mb-lg">
+    <h3 class="mb-md">Location</h3>
+    
+    <ion-item>
+      <ion-label>
+        <h4>Background Location</h4>
+        <p>Allow tracking during active bookings</p>
+      </ion-label>
+      <ion-toggle [(ngModel)]="settings.backgroundLocation" (ionChange)="saveSettings()"></ion-toggle>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h4>Location Accuracy</h4>
+        <p>Higher accuracy uses more battery</p>
+      </ion-label>
+      <ion-select [(ngModel)]="settings.locationAccuracy" (ionChange)="saveSettings()">
+        <ion-select-option value="high">High</ion-select-option>
+        <ion-select-option value="medium">Medium</ion-select-option>
+        <ion-select-option value="low">Low</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </div>
+
+  <!-- Privacy -->
+  <div class="settings-section mb-lg">
+    <h3 class="mb-md">Privacy</h3>
+    
+    <ion-item>
+      <ion-label>
+        <h4>Share Profile</h4>
+        <p>Let others see your profile details</p>
+      </ion-label>
+      <ion-toggle [(ngModel)]="settings.shareProfile" (ionChange)="saveSettings()"></ion-toggle>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h4>Activity Status</h4>
+        <p>Show when you're online</p>
+      </ion-label>
+      <ion-toggle [(ngModel)]="settings.activityStatus" (ionChange)="saveSettings()"></ion-toggle>
+    </ion-item>
+  </div>
+
+  <!-- Appearance -->
+  <div class="settings-section mb-lg">
+    <h3 class="mb-md">Appearance</h3>
+    
+    <ion-item>
+      <ion-label>
+        <h4>Theme</h4>
+        <p>Choose app appearance</p>
+      </ion-label>
+      <ion-select [(ngModel)]="settings.theme" (ionChange)="onThemeChange()">
+        <ion-select-option value="light">Light</ion-select-option>
+        <ion-select-option value="dark">Dark</ion-select-option>
+        <ion-select-option value="system">System Default</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h4>Language</h4>
+        <p>App language</p>
+      </ion-label>
+      <ion-select [(ngModel)]="settings.language" (ionChange)="saveSettings()">
+        <ion-select-option value="en">English</ion-select-option>
+        <ion-select-option value="hi">Hindi</ion-select-option>
+        <ion-select-option value="ta">Tamil</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </div>
+
+  <!-- Payment -->
+  <div class="settings-section mb-lg">
+    <h3 class="mb-md">Payment</h3>
+    
+    <ion-item button (click)="managePaymentMethods()">
+      <ion-icon name="card" slot="start"></ion-icon>
+      <ion-label>
+        <h4>Payment Methods</h4>
+        <p>Manage saved payment methods</p>
+      </ion-label>
+      <ion-icon name="chevron-forward" slot="end"></ion-icon>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h4>Save Cards</h4>
+        <p>Remember payment cards for future use</p>
+      </ion-label>
+      <ion-toggle [(ngModel)]="settings.saveCards" (ionChange)="saveSettings()"></ion-toggle>
+    </ion-item>
+  </div>
+
+  <!-- Data & Storage -->
+  <div class="settings-section mb-lg">
+    <h3 class="mb-md">Data & Storage</h3>
+    
+    <ion-item button (click)="clearCache()">
+      <ion-icon name="trash" slot="start"></ion-icon>
+      <ion-label>
+        <h4>Clear Cache</h4>
+        <p>Free up storage space</p>
+      </ion-label>
+      <ion-icon name="chevron-forward" slot="end"></ion-icon>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h4>Auto-download Images</h4>
+        <p>Download parking space images</p>
+      </ion-label>
+      <ion-select [(ngModel)]="settings.autoDownloadImages" (ionChange)="saveSettings()">
+        <ion-select-option value="always">Always</ion-select-option>
+        <ion-select-option value="wifi">WiFi Only</ion-select-option>
+        <ion-select-option value="never">Never</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </div>
+
+  <!-- About -->
+  <div class="settings-section mb-lg">
+    <h3 class="mb-md">About</h3>
+    
+    <ion-item button (click)="viewTerms()">
+      <ion-icon name="document-text" slot="start"></ion-icon>
+      <ion-label>Terms & Conditions</ion-label>
+      <ion-icon name="chevron-forward" slot="end"></ion-icon>
+    </ion-item>
+
+    <ion-item button (click)="viewPrivacy()">
+      <ion-icon name="shield-checkmark" slot="start"></ion-icon>
+      <ion-label>Privacy Policy</ion-label>
+      <ion-icon name="chevron-forward" slot="end"></ion-icon>
+    </ion-item>
+
+    <ion-item button (click)="contactSupport()">
+      <ion-icon name="help-circle" slot="start"></ion-icon>
+      <ion-label>Contact Support</ion-label>
+      <ion-icon name="chevron-forward" slot="end"></ion-icon>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h4>App Version</h4>
+        <p>1.0.0</p>
+      </ion-label>
+    </ion-item>
+  </div>
+
+  <!-- Reset Settings -->
+  <div class="text-center mt-lg mb-lg">
+    <ion-button fill="outline" color="danger" (click)="resetSettings()">
+      <ion-icon name="refresh" slot="start"></ion-icon>
+      Reset to Default
+    </ion-button>
+  </div>
+</ion-content>

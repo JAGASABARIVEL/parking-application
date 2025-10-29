@@ -1,0 +1,16 @@
+<ion-footer class="bottom-tabs">
+  <ion-toolbar>
+    <div class="tabs-container">
+      <div 
+        *ngFor="let tab of tabs"
+        class="tab-item"
+        [class.active]="isActive(tab.route)"
+        [hidden]="!shouldShowTab(tab)"
+        (click)="navigate(tab.route)"
+      >
+        <ion-icon [name]="tab.icon"></ion-icon>
+        <span class="tab-label">{{ tab.label }}</span>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-footer>

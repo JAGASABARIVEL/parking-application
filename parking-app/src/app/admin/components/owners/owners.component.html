@@ -1,0 +1,78 @@
+<div class="owners-page">
+  <div class="page-header">
+    <h1>Owner Commission Accounts</h1>
+    <div class="header-actions">
+      <input 
+        type="text" 
+        placeholder="Search owners..."
+        [formControl]='searchControl'
+        class="search-input"
+      >
+    </div>
+  </div>
+
+  <div class="filters">
+    <select [formControl]="filterTypeControl" class="filter-select">
+      <option *ngFor="let option of filterOptions" [value]="option.value">
+        {{ option.label }}
+      </option>
+    </select>
+
+    <select [formControl]="sortByControl" class="filter-select">
+      <option value="-pending_dues">Highest Dues First</option>
+      <option value="pending_dues">Lowest Dues First</option>
+      <option value="-current_balance">Highest Balance First</option>
+      <option value="current_balance">Lowest Balance First</option>
+    </select>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    Loading owners...
+  </div>
+
+  <div *ngIf="!isLoading" class="owners-table">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Owner Name</th>
+          <th>Email</th>
+          <th>Total Earned</th>
+          <th>Current Balance</th>
+          <th>Pending Dues</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let owner of owners" [class.blocked]="owner.is_blocked">
+          <td class="owner-name" (click)="viewOwnerDetail(owner.id)">
+            <strong>{{ owner.owner_name }}</strong>
+          </td>
+          <td>{{ owner.owner_email }}</td>
+          <td class="currency">{{ formatCurrency(owner.total_earned) }}</td>
+          <td class="currency">{{ formatCurrency(owner.current_balance) }}</td>
+          <td class="currency" [class.overdue]="owner.pending_dues > 0">
+            {{ formatCurrency(owner.pending_dues) }}
+          </td>
+          <td>
+            <span class="status-badge" [class]="getDueStatus(owner)">
+              {{ owner.is_blocked ? 'BLOCKED' : (owner.pending_dues > 0 ? 'PENDING' : 'SETTLED') }}
+            </span>
+          </td>
+          <td class="actions">
+            <button class="btn-action view" (click)="viewOwnerDetail(owner.id)" title="View Details">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button *ngIf="!owner.is_blocked" class="btn-action block" (click)="blockOwner(owner)" title="Block Owner">
+              <i class="fas fa-ban"></i>
+            </button>
+            <button *ngIf="owner.is_blocked" class="btn-action unblock" (click)="unblockOwner(owner)" title="Unblock Owner">
+              <i class="fas fa-unlock"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

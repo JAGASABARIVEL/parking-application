@@ -1,0 +1,180 @@
+<div class="admin-dashboard">
+  <div class="dashboard-header">
+    <h1>Commission Dashboard</h1>
+    <button class="btn btn-primary" (click)="loadDashboard()">
+      <i class="fas fa-refresh"></i> Refresh
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Loading dashboard...</p>
+  </div>
+
+  <div *ngIf="!isLoading && stats" class="dashboard-content">
+    <!-- Main Statistics -->
+    <div class="stats-grid">
+      <div class="stat-card primary">
+        <div class="stat-icon">
+          <i class="fas fa-money-bill"></i>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">Total Commission Earned</p>
+          <h2>{{ formatCurrency(stats.total_commission_earned) }}</h2>
+          <p class="stat-description">All-time earnings</p>
+        </div>
+      </div>
+
+      <div class="stat-card warning">
+        <div class="stat-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">Pending Dues</p>
+          <h2>{{ formatCurrency(stats.total_pending_dues) }}</h2>
+          <p class="stat-description">From COD payments</p>
+        </div>
+      </div>
+
+      <div class="stat-card danger">
+        <div class="stat-icon">
+          <i class="fas fa-ban"></i>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">Blocked Owners</p>
+          <h2>{{ stats.blocked_owners_count }}</h2>
+          <p class="stat-description">Due to excessive dues</p>
+        </div>
+      </div>
+
+      <div class="stat-card secondary">
+        <div class="stat-icon">
+          <i class="fas fa-warning"></i>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">Overdue Owners</p>
+          <h2>{{ stats.owners_with_overdue }}</h2>
+          <p class="stat-description">Dues >{{ stats.commission_percentage }}% days overdue</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <button class="action-btn" (click)="goToBlockedOwners()">
+        <i class="fas fa-shield-alt"></i>
+        <span>View Blocked Owners</span>
+      </button>
+      <button class="action-btn" (click)="goToOwnersWithDues()">
+        <i class="fas fa-list"></i>
+        <span>Owners with Dues</span>
+      </button>
+      <button class="action-btn" (click)="goToDuesManagement()">
+        <i class="fas fa-chart-bar"></i>
+        <span>Dues Management</span>
+      </button>
+      <button class="action-btn" (click)="goToReports()">
+        <i class="fas fa-file"></i>
+        <span>View Reports</span>
+      </button>
+    </div>
+
+    <!-- Monthly Report -->
+    <div class="report-section">
+      <div class="report-header">
+        <h3>Monthly Commission Report</h3>
+        <div class="month-selector">
+          <button (click)="previousMonth()"><i class="fas fa-chevron-left"></i></button>
+          <span>{{ selectedMonth | date: 'MMMM yyyy' }}</span>
+          <button (click)="nextMonth()"><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+
+      <div *ngIf="monthlyReport" class="report-content">
+        <div class="report-grid">
+          <div class="report-item">
+            <label>Period</label>
+            <span>{{ monthlyReport.period }}</span>
+          </div>
+          <div class="report-item">
+            <label>Total Commission</label>
+            <span>{{ formatCurrency(monthlyReport.total_commission) }}</span>
+          </div>
+          <div class="report-item">
+            <label>Processing Fees</label>
+            <span>{{ formatCurrency(monthlyReport.total_processing_fees) }}</span>
+          </div>
+          <div class="report-item">
+            <label>Transactions</label>
+            <span>{{ monthlyReport.transaction_count }}</span>
+          </div>
+          <div class="report-item">
+            <label>Average Commission</label>
+            <span>{{ formatCurrency(monthlyReport.average_commission) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aging Report -->
+    <div class="report-section">
+      <div class="report-header">
+        <h3>Dues Aging Report</h3>
+      </div>
+
+      <div *ngIf="agingReport" class="aging-report">
+        <div class="aging-item">
+          <div class="aging-label">
+            <span>Current (0-30 days)</span>
+            <strong>{{ formatCurrency(agingReport.current_0_30_days) }}</strong>
+          </div>
+          <div class="aging-bar">
+            <div class="aging-progress" 
+              [style.width]="getAgingPercentage(agingReport.current_0_30_days, agingReport.total_overdue) + '%'">
+            </div>
+          </div>
+        </div>
+
+        <div class="aging-item">
+          <div class="aging-label">
+            <span>31-60 days</span>
+            <strong>{{ formatCurrency(agingReport.current_31_60_days) }}</strong>
+          </div>
+          <div class="aging-bar">
+            <div class="aging-progress warning"
+              [style.width]="getAgingPercentage(agingReport.current_31_60_days, agingReport.total_overdue) + '%'">
+            </div>
+          </div>
+        </div>
+
+        <div class="aging-item">
+          <div class="aging-label">
+            <span>61-90 days</span>
+            <strong>{{ formatCurrency(agingReport.current_61_90_days) }}</strong>
+          </div>
+          <div class="aging-bar">
+            <div class="aging-progress danger"
+              [style.width]="getAgingPercentage(agingReport.current_61_90_days, agingReport.total_overdue) + '%'">
+            </div>
+          </div>
+        </div>
+
+        <div class="aging-item">
+          <div class="aging-label">
+            <span>90+ days</span>
+            <strong>{{ formatCurrency(agingReport.current_90_plus_days) }}</strong>
+          </div>
+          <div class="aging-bar">
+            <div class="aging-progress critical"
+              [style.width]="getAgingPercentage(agingReport.current_90_plus_days, agingReport.total_overdue) + '%'">
+            </div>
+          </div>
+        </div>
+
+        <div class="aging-total">
+          <strong>Total Overdue: {{ formatCurrency(agingReport.total_overdue) }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

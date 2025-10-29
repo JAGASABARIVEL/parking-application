@@ -1,0 +1,208 @@
+<!-- vehicles/vehicle-form/vehicle-form.page.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/vehicles"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ isEditMode ? 'Edit' : 'Add' }} Vehicle</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="vehicleForm" (ngSubmit)="onSubmit()">
+    <!-- Vehicle Number -->
+    <ion-item class="mb-md">
+      <ion-input
+        formControlName="vehicleNumber"
+        label="Vehicle Number"
+        labelPlacement="floating"
+        type="text"
+        placeholder="e.g., KA01AB1234"
+      ></ion-input>
+    </ion-item>
+    <div *ngIf="vehicleForm.get('vehicleNumber')?.invalid && vehicleForm.get('vehicleNumber')?.touched" class="error-message">
+      <p class="text-small text-danger">Vehicle number is required</p>
+    </div>
+
+    <!-- Vehicle Type -->
+    <ion-item class="mb-md">
+      <ion-select
+        formControlName="vehicleType"
+        label="Vehicle Type"
+        labelPlacement="floating"
+        placeholder="Select type"
+      >
+        <ion-select-option value="car">Car</ion-select-option>
+        <ion-select-option value="suv">SUV</ion-select-option>
+        <ion-select-option value="bike">Bike</ion-select-option>
+        <ion-select-option value="van">Van</ion-select-option>
+        <ion-select-option value="truck">Truck</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Vehicle Model -->
+    <ion-item class="mb-md">
+      <ion-input
+        formControlName="vehicleModel"
+        label="Vehicle Model"
+        labelPlacement="floating"
+        type="text"
+        placeholder="e.g., Honda City 2020"
+      ></ion-input>
+    </ion-item>
+
+    <!-- Vehicle Color -->
+    <ion-item class="mb-md">
+      <ion-input
+        formControlName="vehicleColor"
+        label="Vehicle Color"
+        labelPlacement="floating"
+        type="text"
+        placeholder="e.g., Silver"
+      ></ion-input>
+    </ion-item>
+
+    <!-- Driver's License -->
+    <h3 class="mt-lg mb-md">Driver's License Details</h3>
+
+    <ion-item class="mb-md">
+      <ion-input
+        formControlName="dlNumber"
+        label="DL Number"
+        labelPlacement="floating"
+        type="text"
+        placeholder="e.g., KA1234567890123"
+      ></ion-input>
+    </ion-item>
+    <div *ngIf="vehicleForm.get('dlNumber')?.invalid && vehicleForm.get('dlNumber')?.touched" class="error-message">
+      <p class="text-small text-danger">DL number is required</p>
+    </div>
+
+    <ion-item class="mb-md">
+      <ion-input
+        formControlName="dlExpiryDate"
+        label="DL Expiry Date"
+        labelPlacement="floating"
+        type="date"
+      ></ion-input>
+    </ion-item>
+    <div *ngIf="vehicleForm.get('dlExpiryDate')?.invalid && vehicleForm.get('dlExpiryDate')?.touched" class="error-message">
+      <p class="text-small text-danger">DL expiry date is required</p>
+    </div>
+
+    <!-- DL Document Upload -->
+    <div class="mb-md">
+      <ion-label>DL Document (Optional)</ion-label>
+      <div class="file-upload-container">
+        <input
+          type="file"
+          #dlFileInput
+          (change)="onDlFileSelected($event)"
+          accept="image/*,application/pdf"
+          style="display: none;"
+        />
+        <ion-button expand="block" fill="outline" (click)="dlFileInput.click()">
+          <ion-icon name="cloud-upload" slot="start"></ion-icon>
+          {{ dlFileName || 'Upload DL Document' }}
+        </ion-button>
+        <ion-button 
+          *ngIf="dlFileName" 
+          fill="clear" 
+          color="danger" 
+          (click)="removeDlFile()"
+        >
+          <ion-icon name="close-circle"></ion-icon>
+          Remove
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Vehicle Document Upload -->
+    <div class="mb-md">
+      <ion-label>Vehicle Registration (Optional)</ion-label>
+      <div class="file-upload-container">
+        <input
+          type="file"
+          #vehicleFileInput
+          (change)="onVehicleFileSelected($event)"
+          accept="image/*,application/pdf"
+          style="display: none;"
+        />
+        <ion-button expand="block" fill="outline" (click)="vehicleFileInput.click()">
+          <ion-icon name="cloud-upload" slot="start"></ion-icon>
+          {{ vehicleFileName || 'Upload Vehicle Document' }}
+        </ion-button>
+        <ion-button 
+          *ngIf="vehicleFileName" 
+          fill="clear" 
+          color="danger" 
+          (click)="removeVehicleFile()"
+        >
+          <ion-icon name="close-circle"></ion-icon>
+          Remove
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Vehicle Dimensions -->
+    <h3 class="mt-lg mb-md">Vehicle Dimensions (meters)</h3>
+
+    <div class="flex gap-md mb-md">
+      <ion-item style="flex: 1;">
+        <ion-input
+          formControlName="length"
+          label="Length"
+          labelPlacement="floating"
+          type="number"
+          step="0.1"
+          placeholder="4.5"
+        ></ion-input>
+      </ion-item>
+      <ion-item style="flex: 1;">
+        <ion-input
+          formControlName="width"
+          label="Width"
+          labelPlacement="floating"
+          type="number"
+          step="0.1"
+          placeholder="1.8"
+        ></ion-input>
+      </ion-item>
+      <ion-item style="flex: 1;">
+        <ion-input
+          formControlName="height"
+          label="Height"
+          labelPlacement="floating"
+          type="number"
+          step="0.1"
+          placeholder="1.5"
+        ></ion-input>
+      </ion-item>
+    </div>
+
+    <!-- Active Status -->
+    <ion-item class="mb-lg">
+      <ion-checkbox formControlName="isActive">Mark as active vehicle</ion-checkbox>
+    </ion-item>
+
+    <!-- Submit Buttons -->
+    <ion-button 
+      expand="block" 
+      type="submit" 
+      [disabled]="vehicleForm.invalid || isLoading"
+      class="mb-md"
+    >
+      <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+      <span *ngIf="!isLoading">{{ isEditMode ? 'Update' : 'Add' }} Vehicle</span>
+    </ion-button>
+
+    <ion-button 
+      expand="block" 
+      fill="outline" 
+      (click)="cancel()"
+      [disabled]="isLoading"
+    >
+      Cancel
+    </ion-button>
+  </form>
+</ion-content>

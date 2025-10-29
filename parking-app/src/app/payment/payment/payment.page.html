@@ -1,0 +1,68 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/bookings-history"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Payment</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="booking">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Booking Summary</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="flex-between mb-md">
+          <span>Parking Space</span>
+          <strong>{{ booking.parking_space.title }}</strong>
+        </div>
+        <div class="flex-between mb-md">
+          <span>Duration</span>
+          <strong>{{ booking.booking_type }}</strong>
+        </div>
+        <div class="flex-between mb-md">
+          <span>Check-in</span>
+          <strong>{{ booking.start_datetime | date: 'short' }}</strong>
+        </div>
+        <div class="flex-between mb-md">
+          <span>Check-out</span>
+          <strong>{{ booking.end_datetime | date: 'short' }}</strong>
+        </div>
+        <ion-item-divider></ion-item-divider>
+        <div class="flex-between mt-md">
+          <h3>Total Amount</h3>
+          <h3 class="text-primary">₹{{ booking.total_price }}</h3>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Payment Method</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div *ngIf="paymentMethod === 'cod'">
+          <ion-icon name="cash" size="large" color="success"></ion-icon>
+          <h3>Cash on Delivery</h3>
+          <p>Pay when you arrive at the parking</p>
+        </div>
+        <div *ngIf="paymentMethod === 'razorpay'">
+          <ion-icon name="card" size="large" color="primary"></ion-icon>
+          <h3>Razorpay</h3>
+          <p>Secure online payment</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-button expand="block" (click)="processPayment()" [disabled]="isLoading">
+      <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+      Confirm & Pay
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" (click)="cancel()">
+      Cancel
+    </ion-button>
+  </div>
+</ion-content>

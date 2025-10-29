@@ -1,0 +1,372 @@
+<!-- owner/add-parking/add-parking.page.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/owner-dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ isEditMode ? 'Edit' : 'Add' }} Parking Space</ion-title>
+  </ion-toolbar>
+  <ion-progress-bar [value]="currentStep / 4"></ion-progress-bar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="parkingForm" (ngSubmit)="onSubmit()">
+    
+    <!-- Step 1: Basic Information -->
+    <div *ngIf="currentStep === 1" class="form-step">
+      <h2 class="mb-lg">Basic Information</h2>
+
+      <ion-item class="mb-md">
+        <ion-input
+          formControlName="title"
+          label="Title"
+          labelPlacement="floating"
+          type="text"
+          placeholder="e.g., Secure Garage near Airport"
+        ></ion-input>
+      </ion-item>
+      <div *ngIf="parkingForm.get('title')?.invalid && parkingForm.get('title')?.touched" class="error-message">
+        <p class="text-small text-danger">Title is required</p>
+      </div>
+
+      <ion-item class="mb-md">
+        <ion-textarea
+          formControlName="description"
+          label="Description"
+          labelPlacement="floating"
+          rows="4"
+          placeholder="Describe your parking space..."
+        ></ion-textarea>
+      </ion-item>
+
+      <ion-item class="mb-md">
+        <ion-select
+          formControlName="spaceType"
+          label="Space Type"
+          labelPlacement="floating"
+          placeholder="Select type"
+        >
+          <ion-select-option value="garage">Garage</ion-select-option>
+          <ion-select-option value="open">Open Space</ion-select-option>
+          <ion-select-option value="covered">Covered</ion-select-option>
+          <ion-select-option value="private">Private Driveway</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <div class="flex gap-md mb-md">
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="totalSpaces"
+            label="Total Spaces"
+            labelPlacement="floating"
+            type="number"
+            min="1"
+          ></ion-input>
+        </ion-item>
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="availableSpaces"
+            label="Available"
+            labelPlacement="floating"
+            type="number"
+            min="0"
+          ></ion-input>
+        </ion-item>
+      </div>
+
+      <ion-button expand="block" (click)="nextStep()" [disabled]="!isStep1Valid()">
+        Continue
+      </ion-button>
+    </div>
+
+    <!-- Step 2: Location Details -->
+    <div *ngIf="currentStep === 2" class="form-step">
+      <h2 class="mb-lg">Location Details</h2>
+
+      <ion-item class="mb-md">
+        <ion-input
+          formControlName="address"
+          label="Full Address"
+          labelPlacement="floating"
+          type="text"
+          placeholder="Street address"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item class="mb-md">
+        <ion-input
+          formControlName="landmark"
+          label="Landmark"
+          labelPlacement="floating"
+          type="text"
+          placeholder="Nearby landmark"
+        ></ion-input>
+      </ion-item>
+
+      <div class="flex gap-md mb-md">
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="city"
+            label="City"
+            labelPlacement="floating"
+            type="text"
+          ></ion-input>
+        </ion-item>
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="area"
+            label="Area"
+            labelPlacement="floating"
+            type="text"
+          ></ion-input>
+        </ion-item>
+      </div>
+
+      <div class="flex gap-md mb-md">
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="latitude"
+            label="Latitude"
+            labelPlacement="floating"
+            type="number"
+            step="0.000001"
+          ></ion-input>
+        </ion-item>
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="longitude"
+            label="Longitude"
+            labelPlacement="floating"
+            type="number"
+            step="0.000001"
+          ></ion-input>
+        </ion-item>
+      </div>
+
+      <ion-button expand="block" fill="outline" (click)="getCurrentLocation()" class="mb-md">
+        <ion-icon name="locate" slot="start"></ion-icon>
+        Use Current Location
+      </ion-button>
+
+      <div class="flex gap-md">
+        <ion-button expand="block" fill="outline" (click)="previousStep()">
+          Back
+        </ion-button>
+        <ion-button expand="block" (click)="nextStep()" [disabled]="!isStep2Valid()">
+          Continue
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Step 3: Pricing & Availability -->
+    <div *ngIf="currentStep === 3" class="form-step">
+      <h2 class="mb-lg">Pricing & Availability</h2>
+
+      <h3 class="mb-md">Pricing</h3>
+      
+      <div class="flex gap-md mb-md">
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="pricePerDay"
+            label="Per Day (₹)"
+            labelPlacement="floating"
+            type="number"
+            min="0"
+          ></ion-input>
+        </ion-item>
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="pricePerWeek"
+            label="Per Week (₹)"
+            labelPlacement="floating"
+            type="number"
+            min="0"
+          ></ion-input>
+        </ion-item>
+      </div>
+
+      <div class="flex gap-md mb-lg">
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="pricePerMonth"
+            label="Per Month (₹)"
+            labelPlacement="floating"
+            type="number"
+            min="0"
+          ></ion-input>
+        </ion-item>
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="pricePerYear"
+            label="Per Year (₹)"
+            labelPlacement="floating"
+            type="number"
+            min="0"
+          ></ion-input>
+        </ion-item>
+      </div>
+
+      <h3 class="mb-md">Operating Hours</h3>
+
+      <div class="flex gap-md mb-md">
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="availableFrom"
+            label="From"
+            labelPlacement="floating"
+            type="time"
+          ></ion-input>
+        </ion-item>
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="availableUntil"
+            label="Until"
+            labelPlacement="floating"
+            type="time"
+          ></ion-input>
+        </ion-item>
+      </div>
+
+      <h3 class="mb-md">Vehicle Restrictions</h3>
+
+      <div class="flex gap-md mb-md">
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="maxHeight"
+            label="Max Height (m)"
+            labelPlacement="floating"
+            type="number"
+            step="0.1"
+          ></ion-input>
+        </ion-item>
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="maxLength"
+            label="Max Length (m)"
+            labelPlacement="floating"
+            type="number"
+            step="0.1"
+          ></ion-input>
+        </ion-item>
+        <ion-item style="flex: 1;">
+          <ion-input
+            formControlName="maxWidth"
+            label="Max Width (m)"
+            labelPlacement="floating"
+            type="number"
+            step="0.1"
+          ></ion-input>
+        </ion-item>
+      </div>
+
+      <ion-item class="mb-md">
+        <ion-select
+          formControlName="allowedVehicleTypes"
+          label="Allowed Vehicle Types"
+          labelPlacement="floating"
+          multiple="true"
+        >
+          <ion-select-option value="car">Car</ion-select-option>
+          <ion-select-option value="suv">SUV</ion-select-option>
+          <ion-select-option value="bike">Bike</ion-select-option>
+          <ion-select-option value="van">Van</ion-select-option>
+          <ion-select-option value="truck">Truck</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <div class="flex gap-md">
+        <ion-button expand="block" fill="outline" (click)="previousStep()">
+          Back
+        </ion-button>
+        <ion-button expand="block" (click)="nextStep()" [disabled]="!isStep3Valid()">
+          Continue
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Step 4: Amenities & Photos -->
+    <div *ngIf="currentStep === 4" class="form-step">
+      <h2 class="mb-lg">Amenities & Photos</h2>
+
+      <h3 class="mb-md">Amenities</h3>
+
+      <ion-item class="mb-md">
+        <ion-checkbox formControlName="hasSecurityCamera">Security Camera</ion-checkbox>
+      </ion-item>
+
+      <ion-item class="mb-md">
+        <ion-checkbox formControlName="hasLighting">Good Lighting</ion-checkbox>
+      </ion-item>
+
+      <ion-item class="mb-md">
+        <ion-checkbox formControlName="hasEvCharging">EV Charging</ion-checkbox>
+      </ion-item>
+
+      <ion-item class="mb-md">
+        <ion-checkbox formControlName="hasSurveillance">24/7 Surveillance</ion-checkbox>
+      </ion-item>
+
+      <ion-item class="mb-md">
+        <ion-checkbox formControlName="hasCovered">Covered Space</ion-checkbox>
+      </ion-item>
+
+      <ion-item class="mb-lg">
+        <ion-checkbox formControlName="has247Access">24/7 Access</ion-checkbox>
+      </ion-item>
+
+      <h3 class="mb-md">Payment Methods</h3>
+
+      <ion-item class="mb-md">
+        <ion-select
+          formControlName="paymentMethods"
+          label="Accepted Payment Methods"
+          labelPlacement="floating"
+          multiple="true"
+        >
+          <ion-select-option value="cod">Cash on Delivery</ion-select-option>
+          <ion-select-option value="razorpay">Razorpay</ion-select-option>
+          <ion-select-option value="upi">UPI</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <h3 class="mb-md">Photos</h3>
+
+      <div class="photo-upload mb-lg">
+        <div class="photo-grid mb-md">
+          <div *ngFor="let photo of photoPreview; let i = index" class="photo-item">
+            <img [src]="photo" />
+            <ion-button fill="clear" size="small" color="danger" (click)="removePhoto(i)">
+              <ion-icon name="close-circle"></ion-icon>
+            </ion-button>
+          </div>
+          <div class="add-photo-btn" (click)="selectPhotos()">
+            <ion-icon name="camera"></ion-icon>
+            <p>Add Photos</p>
+          </div>
+        </div>
+        <input
+          type="file"
+          #photoInput
+          (change)="onPhotosSelected($event)"
+          accept="image/*"
+          multiple
+          style="display: none;"
+        />
+      </div>
+
+      <div class="flex gap-md">
+        <ion-button expand="block" fill="outline" (click)="previousStep()">
+          Back
+        </ion-button>
+        <ion-button 
+          expand="block" 
+          type="submit" 
+          [disabled]="parkingForm.invalid || isLoading"
+        >
+          <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+          <span *ngIf="!isLoading">{{ isEditMode ? 'Update' : 'Create' }} Parking Space</span>
+        </ion-button>
+      </div>
+    </div>
+  </form>
+</ion-content>

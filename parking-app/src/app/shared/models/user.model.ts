@@ -6,7 +6,7 @@ export interface User {
   first_name: string;
   last_name: string;
   phone_number: string;
-  user_type: 'driver' | 'owner' | 'both';
+  user_type: 'user' | 'owner' | 'both';
   profile_picture: string;
   bio: string;
   owner_rating: number;

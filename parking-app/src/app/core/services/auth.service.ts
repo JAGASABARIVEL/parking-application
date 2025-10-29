@@ -91,6 +91,12 @@ export class AuthService {
 
   getAccessToken(): Observable<string> {
     return new Observable(observer => {
+      if (!this.storage.get('access_token')) {
+        console.error('Storage not initialized yet');
+        observer.error('Storage not initialized');
+        return;
+      }
+
       this.storage.get('access_token').then(token => {
         observer.next(token);
         observer.complete();

@@ -10,6 +10,15 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private authService: AuthService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // Skip token for login and register endpoints
+    const excludedUrls = ['/login', '/register'];
+
+    // If the request URL matches any excluded endpoint, skip token addition
+    if (excludedUrls.some(url => request.url.includes(url))) {
+      return next.handle(request);
+    }
+
+    // Otherwise, attach token
     return from(this.addToken(request)).pipe(
       switchMap(newRequest => next.handle(newRequest))
     );

@@ -1,0 +1,57 @@
+// vehicles/vehicles.page.scss
+// vehicles/vehicle-form/vehicle-form.page.scss
+
+.vehicle-card {
+  margin-bottom: 16px;
+  
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+  }
+}
+
+.vehicle-details {
+  .detail-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    
+    ion-icon {
+      color: var(--ion-color-primary);
+      font-size: 18px;
+    }
+  }
+}
+
+.vehicle-dimensions {
+  padding: 12px;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  
+  .flex {
+    display: flex;
+    justify-content: space-around;
+  }
+}
+
+.error-message {
+  margin-top: -8px;
+  margin-bottom: 16px;
+}
+
+.form-step {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

@@ -1,0 +1,81 @@
+<!-- auth/login/login.page.html -->
+<ion-content class="ion-padding">
+  <div class="auth-container">
+    <!-- Logo/Header -->
+    <div class="text-center mb-lg">
+      <ion-icon name="car-sport" size="large" color="primary" style="font-size: 64px;"></ion-icon>
+      <h1 class="mt-md">Welcome Back</h1>
+      <p class="text-muted">Sign in to continue parking</p>
+    </div>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+      <ion-item class="mb-md">
+        <ion-input
+          formControlName="username"
+          label="Username or Email"
+          labelPlacement="floating"
+          type="text"
+          placeholder="Enter username or email"
+        ></ion-input>
+      </ion-item>
+      <div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" class="error-message">
+        <p class="text-small text-danger">Username is required</p>
+      </div>
+
+      <ion-item class="mb-md">
+        <ion-input
+          formControlName="password"
+          label="Password"
+          labelPlacement="floating"
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="Enter password"
+        ></ion-input>
+        <ion-button slot="end" fill="clear" (click)="togglePassword()">
+          <ion-icon [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="error-message">
+        <p class="text-small text-danger">Password is required</p>
+      </div>
+
+      <!-- Remember Me & Forgot Password -->
+      <div class="flex-between mb-lg">
+        <ion-checkbox formControlName="rememberMe">Remember me</ion-checkbox>
+        <ion-button fill="clear" size="small" (click)="forgotPassword()">
+          Forgot Password?
+        </ion-button>
+      </div>
+
+      <!-- Login Button -->
+      <ion-button 
+        expand="block" 
+        type="submit" 
+        [disabled]="loginForm.invalid || isLoading"
+        class="mb-md"
+      >
+        <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+        <span *ngIf="!isLoading">Sign In</span>
+      </ion-button>
+
+      <!-- Social Login -->
+      <div class="divider mb-md">
+        <span>OR</span>
+      </div>
+
+      <ion-button expand="block" fill="outline" class="mb-md" (click)="loginWithGoogle()">
+        <ion-icon name="logo-google" slot="start"></ion-icon>
+        Continue with Google
+      </ion-button>
+
+      <!-- Register Link -->
+      <div class="text-center mt-lg">
+        <p>Don't have an account? 
+          <ion-button fill="clear" (click)="goToRegister()">
+            Sign Up
+          </ion-button>
+        </p>
+      </div>
+    </form>
+  </div>
+</ion-content>
