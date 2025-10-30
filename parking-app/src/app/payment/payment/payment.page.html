@@ -1,5 +1,6 @@
+<!-- payment/payment/payment.page.html - UPDATED -->
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/bookings-history"></ion-back-button>
     </ion-buttons>
@@ -9,60 +10,286 @@
 
 <ion-content class="ion-padding">
   <div *ngIf="booking">
-    <ion-card>
+    <!-- BOOKING SUMMARY CARD -->
+    <ion-card class="mb-lg">
       <ion-card-header>
         <ion-card-title>Booking Summary</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <div class="flex-between mb-md">
-          <span>Parking Space</span>
-          <strong>{{ booking.parking_space.title }}</strong>
+        <!-- Parking Space Info -->
+        <div class="summary-item mb-md">
+          <span class="label">Parking Space</span>
+          <span class="value">{{ booking.parking_space.title }}</span>
         </div>
-        <div class="flex-between mb-md">
-          <span>Duration</span>
-          <strong>{{ booking.booking_type }}</strong>
+
+        <!-- Duration -->
+        <div class="summary-item mb-md">
+          <span class="label">Duration</span>
+          <span class="value">{{ booking.booking_type | titlecase }}</span>
         </div>
-        <div class="flex-between mb-md">
-          <span>Check-in</span>
-          <strong>{{ booking.start_datetime | date: 'short' }}</strong>
+
+        <!-- Dates -->
+        <div class="summary-item mb-md">
+          <span class="label">Check-in</span>
+          <span class="value">{{ booking.start_datetime | date: 'short' }}</span>
         </div>
-        <div class="flex-between mb-md">
-          <span>Check-out</span>
-          <strong>{{ booking.end_datetime | date: 'short' }}</strong>
+        <div class="summary-item mb-md">
+          <span class="label">Check-out</span>
+          <span class="value">{{ booking.end_datetime | date: 'short' }}</span>
         </div>
-        <ion-item-divider></ion-item-divider>
-        <div class="flex-between mt-md">
-          <h3>Total Amount</h3>
-          <h3 class="text-primary">₹{{ booking.total_price }}</h3>
+
+        <!-- Vehicle -->
+        <div class="summary-item mb-md">
+          <span class="label">Vehicle</span>
+          <span class="value">{{ booking.vehicle.vehicle_number }}</span>
+        </div>
+
+        <!-- Divider -->
+        <ion-item-divider class="my-md"></ion-item-divider>
+
+        <!-- Price Breakdown -->
+        <div class="price-breakdown">
+          <div class="summary-item mb-md">
+            <span class="label">Base Price</span>
+            <span class="value">₹{{ booking.base_price || booking.total_price }}</span>
+          </div>
+
+          <div *ngIf="booking.discount && booking.discount > 0" class="summary-item mb-md">
+            <span class="label text-success">Discount</span>
+            <span class="value text-success">-₹{{ booking.discount }}</span>
+          </div>
+
+          <div class="summary-item mb-md total">
+            <span class="label"><strong>Total Amount</strong></span>
+            <span class="value"><strong class="text-primary text-lg">₹{{ booking.total_price }}</strong></span>
+          </div>
         </div>
       </ion-card-content>
     </ion-card>
 
-    <ion-card>
+    <!-- WALLET BALANCE CARD -->
+    <ion-card *ngIf="walletBalance >= 0" class="mb-lg">
       <ion-card-header>
-        <ion-card-title>Payment Method</ion-card-title>
+        <ion-card-title>Wallet Balance</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <div *ngIf="paymentMethod === 'cod'">
-          <ion-icon name="cash" size="large" color="success"></ion-icon>
-          <h3>Cash on Delivery</h3>
-          <p>Pay when you arrive at the parking</p>
+        <div class="flex-between mb-md">
+          <span>Available Balance</span>
+          <strong class="text-primary">₹{{ walletBalance }}</strong>
         </div>
-        <div *ngIf="paymentMethod === 'razorpay'">
-          <ion-icon name="card" size="large" color="primary"></ion-icon>
-          <h3>Razorpay</h3>
-          <p>Secure online payment</p>
+
+        <div *ngIf="canPayWithWallet" class="success-indicator">
+          <ion-icon name="checkmark-circle" color="success"></ion-icon>
+          <span>Sufficient balance to pay with wallet</span>
+        </div>
+
+        <div *ngIf="!canPayWithWallet && walletBalance > 0" class="warning-indicator">
+          <ion-icon name="alert-circle" color="warning"></ion-icon>
+          <span>Need ₹{{ booking.total_price - walletBalance }} more</span>
+        </div>
+
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          size="small"
+          (click)="addFundsToWallet()"
+          class="mt-md"
+        >
+          <ion-icon name="add-circle" slot="start"></ion-icon>
+          Add Funds to Wallet
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- PAYMENT METHOD SELECTION -->
+    <ion-card class="mb-lg">
+      <ion-card-header>
+        <ion-card-title>Select Payment Method</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-radio-group [(ngModel)]="paymentMethod">
+          <!-- WALLET PAYMENT -->
+          <ion-item 
+            class="payment-option mb-md"
+            [class.selected]="paymentMethod === 'wallet'"
+            [disabled]="walletBalance <= 0"
+          >
+            <ion-card>
+              <ion-card-content>
+                <div class="flex-between">
+                  <div>
+                    <ion-icon name="wallet" size="large" color="primary"></ion-icon>
+                    <h4>Wallet</h4>
+                    <p class="text-small text-muted">
+                      Pay from your wallet balance
+                    </p>
+                  </div>
+                  <ion-radio value="wallet" [disabled]="!canPayWithWallet"></ion-radio>
+                </div>
+                <div class="mt-sm">
+                  <small class="text-muted">
+                    Available: ₹{{ walletBalance }}
+                  </small>
+                  <span 
+                    *ngIf="!canPayWithWallet && walletBalance > 0"
+                    class="text-small text-warning ml-md"
+                  >
+                    (Insufficient balance)
+                  </span>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ion-item>
+
+          <!-- RAZORPAY PAYMENT -->
+          <ion-item 
+            class="payment-option mb-md"
+            [class.selected]="paymentMethod === 'razorpay'"
+          >
+            <ion-card>
+              <ion-card-content>
+                <div class="flex-between">
+                  <div>
+                    <ion-icon name="card" size="large" color="primary"></ion-icon>
+                    <h4>Card / Net Banking</h4>
+                    <p class="text-small text-muted">
+                      Secure payment via Razorpay
+                    </p>
+                  </div>
+                  <ion-radio value="razorpay"></ion-radio>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ion-item>
+
+          <!-- UPI PAYMENT -->
+          <ion-item 
+            class="payment-option mb-md"
+            [class.selected]="paymentMethod === 'upi'"
+          >
+            <ion-card>
+              <ion-card-content>
+                <div class="flex-between">
+                  <div>
+                    <ion-icon name="phone-portrait" size="large" color="primary"></ion-icon>
+                    <h4>UPI</h4>
+                    <p class="text-small text-muted">
+                      Quick payment via UPI
+                    </p>
+                  </div>
+                  <ion-radio value="upi"></ion-radio>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ion-item>
+
+          <!-- COD PAYMENT -->
+          <ion-item 
+            class="payment-option mb-md"
+            [class.selected]="paymentMethod === 'cod'"
+          >
+            <ion-card>
+              <ion-card-content>
+                <div class="flex-between">
+                  <div>
+                    <ion-icon name="cash" size="large" color="success"></ion-icon>
+                    <h4>Cash on Delivery</h4>
+                    <p class="text-small text-muted">
+                      Pay when you arrive
+                    </p>
+                  </div>
+                  <ion-radio value="cod"></ion-radio>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ion-item>
+        </ion-radio-group>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- SECURITY & INFO -->
+    <ion-card class="info-card mb-lg">
+      <ion-card-content>
+        <div class="flex gap-md mb-md">
+          <ion-icon name="shield-checkmark" color="success" size="large"></ion-icon>
+          <div>
+            <h4>Secure Payment</h4>
+            <p class="text-small text-muted">
+              All payments are encrypted and secure
+            </p>
+          </div>
+        </div>
+        <div class="flex gap-md">
+          <ion-icon name="information-circle" color="primary" size="large"></ion-icon>
+          <div>
+            <h4>Payment Information</h4>
+            <p class="text-small text-muted">
+              <span *ngIf="paymentMethod === 'cod'">
+                You will be charged when you arrive at the parking space
+              </span>
+              <span *ngIf="paymentMethod === 'razorpay'">
+                You will be redirected to a secure payment gateway
+              </span>
+              <span *ngIf="paymentMethod === 'upi'">
+                A UPI payment prompt will appear on your device
+              </span>
+              <span *ngIf="paymentMethod === 'wallet'">
+                Amount will be deducted from your wallet
+              </span>
+            </p>
+          </div>
         </div>
       </ion-card-content>
     </ion-card>
 
-    <ion-button expand="block" (click)="processPayment()" [disabled]="isLoading">
-      <ion-icon name="checkmark-circle" slot="start"></ion-icon>
-      Confirm & Pay
-    </ion-button>
+    <!-- ACTION BUTTONS -->
+    <div class="action-buttons mb-lg">
+      <ion-button 
+        expand="block" 
+        size="large"
+        color="primary"
+        (click)="processPayment()"
+        [disabled]="isLoading || 
+                    (paymentMethod === 'wallet' && !canPayWithWallet)"
+        class="mb-md"
+      >
+        <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+        <span *ngIf="!isLoading">
+          <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+          Complete Payment
+        </span>
+      </ion-button>
 
-    <ion-button expand="block" fill="outline" (click)="cancel()">
-      Cancel
-    </ion-button>
+      <ion-button 
+        expand="block" 
+        fill="outline"
+        color="danger"
+        (click)="cancel()"
+        [disabled]="isLoading"
+      >
+        <ion-icon name="close-circle" slot="start"></ion-icon>
+        Cancel
+      </ion-button>
+    </div>
+
+    <!-- TERMS & CONDITIONS -->
+    <div class="terms-section">
+      <p class="text-center text-small text-muted">
+        By completing this payment, you agree to our 
+        <ion-text color="primary">
+          <a href="#">Terms of Service</a>
+        </ion-text>
+        and 
+        <ion-text color="primary">
+          <a href="#">Privacy Policy</a>
+        </ion-text>
+      </p>
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="!booking" class="loading-state">
+    <ion-spinner class="mt-lg"></ion-spinner>
+    <p class="mt-md text-center">Loading booking details...</p>
   </div>
 </ion-content>

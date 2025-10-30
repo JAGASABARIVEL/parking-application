@@ -209,7 +209,7 @@ export class BookingFlowPage implements OnInit {
   }
 
   addNewVehicle() {
-    this.router.navigate(['/vehicle-register']);
+    this.router.navigate(['/vehicles/add']);
   }
 
   getPaymentMethodLabel(method: string): string {

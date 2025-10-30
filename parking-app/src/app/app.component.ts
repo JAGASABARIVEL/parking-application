@@ -105,8 +105,8 @@ export class AppComponent implements OnInit {
   /**
    * Open help page
    */
-  openHelp() {
-    this.router.navigate(['/help']);
+  openDisputes() {
+    this.router.navigate(['/disputes-returns']);
   }
 
   /**

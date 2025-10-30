@@ -1,14 +1,22 @@
-<!-- ==================== ACTIVE BOOKING PAGE ==================== -->
-
-<!-- active-booking/active-booking.page.html -->
+<!-- active-booking/active-booking.page.html - FIXED -->
 <ion-header>
   <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/bookings-history"></ion-back-button>
+    </ion-buttons>
     <ion-title>Active Booking</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div *ngIf="booking">
+  <!-- LOADING STATE -->
+  <div *ngIf="isLoading" class="spinner-container mt-lg">
+    <ion-spinner></ion-spinner>
+    <p class="text-center mt-md">Loading booking details...</p>
+  </div>
+
+  <!-- BOOKING CONTENT -->
+  <div *ngIf="booking && !isLoading">
     <!-- Status Header -->
     <ion-card class="status-card" [color]="getStatusColor(booking.status)">
       <ion-card-content>
@@ -31,7 +39,15 @@
     <!-- Live Map Tracking -->
     <div class="map-section mt-lg mb-lg">
       <h3 class="mb-md">Live Location Tracking</h3>
-      <div id="tracking-map" style="height: 300px; border-radius: 8px;"></div>
+      <div 
+        id="tracking-map" 
+        #trackingMap
+        style="height: 300px; border-radius: 8px; overflow: hidden; background: #f5f5f5;"
+      ></div>
+      <p class="text-small text-muted mt-sm">
+        <ion-icon name="information-circle"></ion-icon>
+        Map initializing...
+      </p>
     </div>
 
     <!-- Booking Details -->
@@ -42,44 +58,82 @@
         <div class="detail-item">
           <div class="flex-between mb-md">
             <span class="text-small text-muted">Parking Space</span>
-            <span>{{ booking.parking_space.title }}</span>
+            <span *ngIf="booking.parking_space?.title; else noTitle">
+              {{ booking.parking_space.title }}
+            </span>
+            <ng-template #noTitle>
+              <span class="text-muted">N/A</span>
+            </ng-template>
           </div>
+
           <div class="flex-between mb-md">
             <span class="text-small text-muted">Location</span>
-            <span class="text-right">{{ booking.parking_space.address }}</span>
+            <span *ngIf="booking.parking_space?.address; else noAddress" class="text-right">
+              {{ booking.parking_space.address }}
+            </span>
+            <ng-template #noAddress>
+              <span class="text-muted">N/A</span>
+            </ng-template>
           </div>
+
           <div class="flex-between mb-md">
             <span class="text-small text-muted">Vehicle</span>
-            <span>{{ booking.vehicle.vehicle_number }}</span>
+            <span *ngIf="booking.vehicle?.vehicle_number; else noVehicle">
+              {{ booking.vehicle.vehicle_number }}
+            </span>
+            <ng-template #noVehicle>
+              <span class="text-muted">N/A</span>
+            </ng-template>
           </div>
+
           <div class="flex-between mb-md">
             <span class="text-small text-muted">Owner</span>
-            <span>{{ booking.parking_space.owner.get_full_name }}</span>
+            <span *ngIf="booking.parking_space?.owner?.get_full_name; else noOwner">
+              {{ booking.parking_space.owner.get_full_name }}
+            </span>
+            <ng-template #noOwner>
+              <span class="text-muted">N/A</span>
+            </ng-template>
           </div>
+
           <div class="flex-between">
             <span class="text-small text-muted">Contact</span>
-            <ion-button fill="clear" size="small" (click)="callOwner()">
+            <ion-button 
+              *ngIf="booking.parking_space?.owner?.phone_number; else noPhone"
+              fill="clear" 
+              size="small" 
+              (click)="callOwner()"
+            >
               <ion-icon name="call"></ion-icon>
               {{ booking.parking_space.owner.phone_number }}
             </ion-button>
+            <ng-template #noPhone>
+              <span class="text-muted">N/A</span>
+            </ng-template>
           </div>
         </div>
       </ion-card-content>
     </ion-card>
 
     <!-- Distance & ETA (for active/arrived status) -->
-    <ion-card *ngIf="booking.location_tracking && booking.status === 'active'" class="mt-lg">
+    <ion-card *ngIf="booking.location_tracking && (booking.status === 'active' || booking.status === 'arrived')" class="mt-lg">
       <ion-card-content>
         <h3 class="mb-lg">Navigation</h3>
         <div class="flex-between mb-md">
           <span class="text-small text-muted">Distance Remaining</span>
-          <span class="text-lg"><strong>{{ booking.location_tracking.distance_remaining | distance }}</strong></span>
+          <span class="text-lg">
+            <strong>
+              {{ booking.location_tracking.distance_remaining | distance }}
+            </strong>
+          </span>
         </div>
-        <div class="flex-between">
+        <div class="flex-between mb-lg">
           <span class="text-small text-muted">Estimated Time</span>
-          <span class="text-lg"><strong>{{ booking.location_tracking.eta_minutes }} min</strong></span>
+          <span class="text-lg">
+            <strong>{{ booking.location_tracking.eta_minutes || 0 }} min</strong>
+          </span>
         </div>
-        <ion-button expand="block" class="mt-lg" color="secondary">
+        <ion-button expand="block" color="secondary" (click)="startNavigation()">
           <ion-icon name="navigate" slot="start"></ion-icon>
           Open Navigation
         </ion-button>
@@ -92,7 +146,7 @@
         *ngIf="booking.status === 'confirmed'"
         expand="block" 
         color="success"
-        (click)="startNavigation()"
+        (click)="markAsActive()"
       >
         <ion-icon name="navigate" slot="start"></ion-icon>
         Start Navigation
@@ -121,4 +175,3 @@
     </div>
   </div>
 </ion-content>
-

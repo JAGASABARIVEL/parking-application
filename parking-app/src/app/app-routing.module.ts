@@ -109,7 +109,13 @@ const routes: Routes = [
   },
   {
     path: 'dashboard',
-    loadChildren: () => import('./admin/dashboard/dashboard/dashboard.module').then( m => m.DashboardPageModule)
+    loadChildren: () => import('./admin/dashboard/dashboard/dashboard.module').then( m => m.DashboardPageModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'disputes-returns',
+    loadChildren: () => import('./disputes-returns/disputes-returns/disputes-returns.module').then( m => m.DisputesReturnsPageModule),
+    canActivate: [AuthGuard]
   }
 ];
 

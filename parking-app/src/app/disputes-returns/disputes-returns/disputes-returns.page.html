@@ -1,0 +1,284 @@
+<!-- disputes-returns/disputes-returns.page.html -->
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Disputes & Returns</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Tabs Navigation -->
+  <ion-segment [(ngModel)]="selectedTab" (ionChange)="onTabChange()">
+    <ion-segment-button value="disputes">
+      <ion-label>Disputes</ion-label>
+      <ion-badge *ngIf="disputes.length > 0" color="danger">
+        {{ disputes.length }}
+      </ion-badge>
+    </ion-segment-button>
+    <ion-segment-button value="returns">
+      <ion-label>Returns</ion-label>
+      <ion-badge *ngIf="returns.length > 0" color="warning">
+        {{ returns.length }}
+      </ion-badge>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Create New Button -->
+  <ion-button 
+    expand="block" 
+    class="mt-md mb-md"
+    (click)="openCreateForm(selectedTab === 'disputes' ? 'dispute' : 'return')"
+  >
+    <ion-icon name="add-circle" slot="start"></ion-icon>
+    File {{ selectedTab === 'disputes' ? 'Dispute' : 'Return' }}
+  </ion-button>
+
+  <!-- DISPUTES TAB -->
+  <div *ngIf="selectedTab === 'disputes'">
+    <div *ngIf="isLoading" class="spinner">
+      <ion-spinner></ion-spinner>
+    </div>
+
+    <div *ngIf="!isLoading && disputes.length === 0" class="empty-state">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <p>No disputes found</p>
+    </div>
+
+    <ion-card 
+      *ngFor="let dispute of disputes"
+      (click)="viewDisputeDetails(dispute)"
+      class="dispute-card"
+    >
+      <ion-card-content>
+        <div class="flex-between mb-md">
+          <div>
+            <h3>Booking #{{ dispute.booking_id }}</h3>
+            <p class="text-small text-muted">{{ dispute.reason }}</p>
+          </div>
+          <div class="text-right">
+            <ion-badge [color]="getStatusColor(dispute.status)">
+              {{ dispute.status | titlecase }}
+            </ion-badge>
+            <ion-badge [color]="getPriorityColor(dispute.priority)" class="mt-sm">
+              {{ dispute.priority | titlecase }}
+            </ion-badge>
+          </div>
+        </div>
+
+        <p class="text-small mb-md">{{ dispute.description }}</p>
+
+        <div class="flex-between">
+          <small class="text-muted">
+            Created: {{ dispute.created_at | date: 'short' }}
+          </small>
+          <ion-icon name="chevron-forward"></ion-icon>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- RETURNS TAB -->
+  <div *ngIf="selectedTab === 'returns'">
+    <div *ngIf="isLoading" class="spinner">
+      <ion-spinner></ion-spinner>
+    </div>
+
+    <div *ngIf="!isLoading && returns.length === 0" class="empty-state">
+      <ion-icon name="swap-horizontal-outline"></ion-icon>
+      <p>No return requests found</p>
+    </div>
+
+    <ion-card 
+      *ngFor="let returnReq of returns"
+      (click)="viewReturnDetails(returnReq)"
+      class="return-card"
+    >
+      <ion-card-content>
+        <div class="flex-between mb-md">
+          <div>
+            <h3>Booking #{{ returnReq.booking_id }}</h3>
+            <p class="text-small text-muted">{{ returnReq.reason }}</p>
+          </div>
+          <div class="text-right">
+            <ion-badge [color]="getStatusColor(returnReq.status)">
+              {{ returnReq.status | titlecase }}
+            </ion-badge>
+          </div>
+        </div>
+
+        <div class="flex-between mb-md">
+          <span class="text-small">Refund Amount:</span>
+          <strong class="text-primary">₹{{ returnReq.refund_amount }}</strong>
+        </div>
+
+        <div class="flex-between">
+          <small class="text-muted">
+            Created: {{ returnReq.created_at | date: 'short' }}
+          </small>
+          <ion-icon name="chevron-forward"></ion-icon>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- CREATE FORM MODAL -->
+  <ion-modal 
+    [isOpen]="showCreateForm"
+    (didDismiss)="showCreateForm = false"
+  >
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-buttons slot="start">
+            <ion-button (click)="showCreateForm = false">Cancel</ion-button>
+          </ion-buttons>
+          <ion-title>
+            File {{ createFormType === 'dispute' ? 'Dispute' : 'Return' }}
+          </ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+        <!-- Select Booking -->
+        <ion-item class="mb-md">
+          <ion-select
+            [(ngModel)]="selectedBooking"
+            label="Select Booking"
+            labelPlacement="floating"
+            placeholder="Choose a booking"
+          >
+            <ion-select-option 
+              *ngFor="let booking of bookings"
+              [value]="booking"
+            >
+              Booking #{{ booking.id }} - {{ booking.parking_space.title }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Reason -->
+        <ion-item class="mb-md">
+          <ion-select
+            [(ngModel)]="formData.reason"
+            label="Reason"
+            labelPlacement="floating"
+            placeholder="Select reason"
+          >
+            <ion-select-option value="damaged_parking_space">
+              Damaged Parking Space
+            </ion-select-option>
+            <ion-select-option value="unsafe_location">
+              Unsafe Location
+            </ion-select-option>
+            <ion-select-option value="payment_issue">
+              Payment Issue
+            </ion-select-option>
+            <ion-select-option value="false_booking">
+              False Booking
+            </ion-select-option>
+            <ion-select-option value="poor_service">
+              Poor Service
+            </ion-select-option>
+            <ion-select-option value="other">
+              Other
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Priority (for disputes) -->
+        <ion-item *ngIf="createFormType === 'dispute'" class="mb-md">
+          <ion-select
+            [(ngModel)]="formData.priority"
+            label="Priority"
+            labelPlacement="floating"
+          >
+            <ion-select-option value="low">Low</ion-select-option>
+            <ion-select-option value="medium">Medium</ion-select-option>
+            <ion-select-option value="high">High</ion-select-option>
+            <ion-select-option value="critical">Critical</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Refund Amount (for returns) -->
+        <ion-item *ngIf="createFormType === 'return'" class="mb-md">
+          <ion-input
+            [(ngModel)]="formData.refundAmount"
+            label="Refund Amount (₹)"
+            labelPlacement="floating"
+            type="number"
+            min="0"
+          ></ion-input>
+        </ion-item>
+
+        <!-- Description -->
+        <ion-item class="mb-md">
+          <ion-textarea
+            [(ngModel)]="formData.description"
+            label="Description"
+            labelPlacement="floating"
+            rows="4"
+            placeholder="Provide detailed information..."
+          ></ion-textarea>
+        </ion-item>
+
+        <!-- Evidence Upload -->
+        <div class="mb-md">
+          <ion-label>Supporting Evidence (Photos/Documents)</ion-label>
+          <input 
+            #fileInput 
+            type="file" 
+            multiple 
+            accept="image/*,.pdf"
+            (change)="onFileSelected($event)"
+            style="display: none;"
+          />
+          <ion-button 
+            expand="block" 
+            fill="outline"
+            (click)="fileInput.click()"
+            class="mt-sm"
+          >
+            <ion-icon name="cloud-upload" slot="start"></ion-icon>
+            Upload Evidence
+          </ion-button>
+
+          <!-- Selected Files List -->
+          <div *ngIf="formData.evidenceFiles.length > 0" class="mt-md">
+            <p class="text-small text-muted mb-sm">
+              {{ formData.evidenceFiles.length }} file(s) selected
+            </p>
+            <div 
+              *ngFor="let file of formData.evidenceFiles; let i = index"
+              class="file-item mb-sm"
+            >
+              <div class="flex-between">
+                <span class="text-small">{{ file.name }}</span>
+                <ion-button 
+                  fill="clear" 
+                  size="small" 
+                  color="danger"
+                  (click)="removeFile(i)"
+                >
+                  <ion-icon name="close"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <ion-button 
+          expand="block" 
+          color="primary"
+          (click)="submitForm()"
+          class="mt-lg"
+        >
+          <ion-icon name="checkmark" slot="start"></ion-icon>
+          Submit
+        </ion-button>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>
